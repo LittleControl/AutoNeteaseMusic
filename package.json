@@ -1,0 +1,15 @@
+{
+  "name": "auto-netease-music",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/LittleControl/AutoNeteaseMusic.git",
+  "author": "littlecontrol",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^0.21.4"
+  }
+}
