@@ -1,13 +1,45 @@
 import axios from 'axios'
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 
 const api = 'http://localhost:3000'
+
+/**
+ * @description: 拦截请求,添加cookie等信息
+ */
+axios.interceptors.request.use(
+  async (config) => {
+    config.withCredentials = true
+
+    /**
+     * @description: 防止网易对IP的限制
+     */
+    config.headers['X-Real-IP'] = '123.138.78.143'
+    const { url, params, data } = config
+    if (!params) {
+      config.params = {}
+    }
+    config.params.timestamp = Date.now()
+    if (url?.includes('/login')) {
+      return config
+    }
+    const COOKIE = await getCookie()
+    if (!data) {
+      config.data = {}
+    }
+    config.data.cookie = COOKIE
+    return config
+  },
+  async (error) => {
+    return Promise.reject(error)
+  }
+)
 
 /**
  * @description: 通过手机号登陆,以获取Cookie
  */
 const loginByPhone = async () => {
-  const url = `${api}/login/cellphone?timestamp=${Date.now()}`
+  console.log('i am here')
+  const url = `${api}/login/cellphone`
   const res = await axios({
     method: 'POST',
     url,
@@ -15,52 +47,70 @@ const loginByPhone = async () => {
       phone: '18502901079',
       password: '2021@Netease',
     },
-    withCredentials: true,
   })
   return res.data.cookie
 }
 
 /**
+ * @description: 获取Cookie
+ */
+
+const getCookie = async () => {
+  const localCookie = await readFile('./.cookie', 'utf8')
+  const { data } = await getLoginStatus(localCookie)
+  if (data.account && data.profile) {
+    return localCookie
+  } else {
+    const COOKIE = await loginByPhone()
+    await writeFile('./.cookie', COOKIE)
+    return COOKIE
+  }
+}
+
+/**
  * @description: 获取用户登陆状态
  */
-const getLoginStatus = async () => {
-  const COOKIE = await loginByPhone()
+const getLoginStatus = async (cookie) => {
   const url = `${api}/login/status`
   const res = await axios({
-    method: 'GET',
+    method: 'POST',
     url,
-    params: {
-      cookie: COOKIE,
-      timestamp: Date.now(),
+    data: {
+      cookie,
     },
-    withCredentials: true,
   })
-  console.log(res.data.data.account)
-  console.log(res.data.data.profile)
+  return res.data
 }
 
 /**
  * @description: 获取用户等级相关信息
  */
 const getUserLevelInfo = async () => {
-  const COOKIE = await loginByPhone()
   const url = `${api}/user/level`
-  const res = await axios({
-    method: 'GET',
+  const { data } = await axios({
+    method: 'POST',
     url,
   })
-  console.log(res)
+  return data
 }
-
-// loginByPhone()
-// getLoginStatus()
 
 /**
- * @description: test file handle func
+ * @description: 前端接口
  */
-
-const fsTest = async (path) => {
-  const res = await readFile(path, 'utf8')
-  console.log(res)
+const checkIn = async () => {
+  const url = `${api}/daily_signin`
+  const { data } = await axios({
+    method: 'POST',
+    url,
+  })
+  return data
 }
-fsTest('./cookie')
+
+checkIn().then(
+  (res) => {
+    console.log(res)
+  },
+  (error) => {
+    console.log(error?.response.data)
+  }
+)
