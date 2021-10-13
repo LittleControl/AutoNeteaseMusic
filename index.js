@@ -35,20 +35,37 @@ axios.interceptors.request.use(
 )
 
 /**
+ * @description: 从文件读取账户信息
+ */
+const getAccountInfo = async () => {
+  try {
+    const res = await readFile('./.account', 'utf-8')
+    const resArr = res.split('\r\n')
+    return {
+      phone: resArr[0],
+      password: resArr[1],
+    }
+  } catch (error) {
+    return error
+  }
+}
+
+/**
  * @description: 通过手机号登陆,以获取Cookie
  */
 const loginByPhone = async () => {
-  console.log('i am here')
   const url = `${api}/login/cellphone`
+  const accoutInfo = await getAccountInfo()
+  const { phone, password } = accoutInfo
   const res = await axios({
     method: 'POST',
     url,
     data: {
-      phone: '18502901079',
-      password: '2021@Netease',
+      phone,
+      password,
     },
   })
-  return res.data.cookie
+  return res.data?.cookie ?? ''
 }
 
 /**
@@ -56,14 +73,19 @@ const loginByPhone = async () => {
  */
 
 const getCookie = async () => {
-  const localCookie = await readFile('./.cookie', 'utf8')
-  const { data } = await getLoginStatus(localCookie)
-  if (data.account && data.profile) {
-    return localCookie
-  } else {
-    const COOKIE = await loginByPhone()
-    await writeFile('./.cookie', COOKIE)
-    return COOKIE
+  try {
+    const localCookie = await readFile('./.cookie', 'utf8')
+    const { data } = await getLoginStatus(localCookie)
+    if (data.account && data.profile) {
+      return localCookie
+    } else {
+      const COOKIE = await loginByPhone()
+      await writeFile('./.cookie', COOKIE)
+      return COOKIE
+    }
+  } catch (error) {
+    console.log(error)
+    return ''
   }
 }
 
@@ -106,11 +128,49 @@ const checkIn = async () => {
   return data
 }
 
-checkIn().then(
-  (res) => {
-    console.log(res)
-  },
-  (error) => {
-    console.log(error?.response.data)
-  }
+/**
+ * @description: 获取每日推荐歌单
+ */
+const getDailyPlaylist = async () => {
+  const url = `${api}/recommend/resource`
+  const { data } = await axios({
+    method: 'POST',
+    url,
+  })
+  return data
+}
+
+/**
+ * @description: 获取每日推荐歌曲
+ */
+const getDailySongs = async () => {
+  const url = `${api}/recommend/songs`
+  const { data } = await axios({
+    method: 'POST',
+    url,
+  })
+  return data
+}
+
+/**
+ * @description: 云贝签到
+ */
+const checkInYunbei = async () => {
+  const url = `${api}/yunbei/sign`
+  const { data } = await axios({
+    method: 'POST',
+    url,
+  })
+  return data
+}
+
+const dailyTask = async () => {
+  const res = await checkIn()
+  const resYunbei = await checkInYunbei()
+  return 'Checkin Success!'
+}
+
+dailyTask().then(
+  (res) => console.log(res),
+  (error) => console.log(error.response?.data)
 )
