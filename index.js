@@ -14,11 +14,13 @@ axios.interceptors.request.use(
      * @description: 防止网易对IP的限制
      */
     config.headers['X-Real-IP'] = '123.138.78.143'
-    const { url, params, data } = config
+    const { method, url, params, data } = config
     if (!params) {
       config.params = {}
     }
-    config.params.timestamp = Date.now()
+    if (method?.toUpperCase() === 'POST') {
+      config.params.timestamp = Date.now()
+    }
     if (url?.includes('/login')) {
       return config
     }
@@ -84,8 +86,7 @@ const getCookie = async () => {
       return COOKIE
     }
   } catch (error) {
-    console.log(error)
-    return ''
+    return error
   }
 }
 
@@ -141,6 +142,49 @@ const getDailyPlaylist = async () => {
 }
 
 /**
+ * @description: 获取歌单详情
+ */
+const getPlaylistContent = async (id) => {
+  const url = `${api}/playlist/detail`
+  const { data } = await axios({
+    method: 'POST',
+    url,
+    params: {
+      id,
+    },
+  })
+  return data
+}
+
+/**
+ * @description: 根据每日歌单推荐刷播放量
+ */
+const playDailyLists = async () => {
+  const url = `${api}/scrobble`
+  const { recommend } = await getDailyPlaylist()
+  let res
+  try {
+    recommend.forEach(async (item) => {
+      const { privileges } = await getPlaylistContent(item.id)
+      privileges.forEach(async (song) => {
+        res = await axios({
+          method: 'POST',
+          url,
+          params: {
+            id: song.id,
+            sourceid: item.id,
+            time: 500,
+          },
+        })
+      })
+    })
+  } catch (error) {
+    res = error.response?.data
+  }
+  return res
+}
+
+/**
  * @description: 获取每日推荐歌曲
  */
 const getDailySongs = async () => {
@@ -149,7 +193,32 @@ const getDailySongs = async () => {
     method: 'POST',
     url,
   })
-  return data
+  return data.data
+}
+
+/**
+ * @description: 听歌打卡, 根据每日推荐刷听歌量
+ */
+const playDailySongs = async () => {
+  const url = `${api}/scrobble`
+  const { dailySongs } = await getDailySongs()
+  let res
+  try {
+    dailySongs.forEach(async (song) => {
+      res = await axios({
+        method: 'POST',
+        url,
+        params: {
+          id: song.id,
+          sourceid: song.al.id,
+          time: 400,
+        },
+      })
+    })
+  } catch (error) {
+    res = error.response?.data
+  }
+  return res
 }
 
 /**
@@ -165,9 +234,16 @@ const checkInYunbei = async () => {
 }
 
 const dailyTask = async () => {
-  const res = await checkIn()
-  const resYunbei = await checkInYunbei()
-  return 'Checkin Success!'
+  let res
+  try {
+    res = await checkIn()
+    res = await checkInYunbei()
+    res = await playDailySongs()
+    res = await playDailyLists()
+  } catch (error) {
+    res = error.response?.data
+  }
+  return res
 }
 
 dailyTask().then(
