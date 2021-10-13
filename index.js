@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { readFile, writeFile } from 'fs/promises'
 
-const api = 'http://localhost:3000'
+const api = 'https://api.littlecontrol.me/'
 
 /**
  * @description: 拦截请求,添加cookie等信息
@@ -20,6 +20,7 @@ axios.interceptors.request.use(
     }
     if (method?.toUpperCase() === 'POST') {
       config.params.timestamp = Date.now()
+      config.params.realIP = '123.138.78.143'
     }
     if (url?.includes('/login')) {
       return config
@@ -211,7 +212,7 @@ const playDailySongs = async () => {
         params: {
           id: song.id,
           sourceid: song.al.id,
-          time: 400,
+          time: 500,
         },
       })
     })
