@@ -63,12 +63,13 @@ const getAccountInfo = async () => {
 /**
  * @description: 通过手机号登陆,以获取Cookie
  */
-const loginByPhone = async (api) => {
-  const url = `${api}/login/cellphone`
+const loginByPhone = async () => {
   let res
   try {
-    const accoutInfo = await getAccountInfo()
-    const { phone, password } = accoutInfo
+    const api = await getLocalApi()
+    const url = `${api}/login/cellphone`
+    const accountInfo = await getAccountInfo()
+    const { phone, password } = accountInfo
     const { data } = await axios({
       method: 'POST',
       url,
