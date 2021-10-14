@@ -1,5 +1,8 @@
+import '@babel/polyfill'
 import axios from 'axios'
 import { readFile, writeFile } from 'fs/promises'
+// const axios = require('axios')
+// const { readFile, writeFile } = require('fs/promises')
 
 /**
  * @description: 获取api
