@@ -5,12 +5,30 @@
   "repository": "https://github.com/LittleControl/AutoNeteaseMusic.git",
   "author": "littlecontrol",
   "license": "MIT",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "start": "node index.js"
   },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "useBuiltIns": "usage",
+          "corejs": "3.18.3"
+        }
+      ]
+    ]
+  },
   "dependencies": {
     "@types/node": "^16.10.9",
-    "axios": "^0.23.0"
+    "axios": "^0.23.0",
+    "core-js": "^3.18.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.8",
+    "@babel/plugin-transform-regenerator": "^7.14.5",
+    "@babel/preset-env": "^7.15.8"
   }
 }
