@@ -1,13 +1,14 @@
 {
   "name": "auto-netease-music",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "repository": "https://github.com/LittleControl/AutoNeteaseMusic.git",
   "author": "littlecontrol",
   "license": "MIT",
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js"
+    "start": "npm run build && node index.js",
+    "build": "babel app.js -o index.js"
   },
   "babel": {
     "presets": [

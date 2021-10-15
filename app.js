@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { readFile, writeFile } from 'fs/promises'
+import path from 'path'
 
-const CONFIG_DIR = __dirname
+const CONFIG_DIR = path.join(__dirname, 'config')
 
 /**
  * @description: 获取api
