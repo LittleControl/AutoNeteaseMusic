@@ -33,15 +33,18 @@ require("core-js/modules/web.dom-collections.for-each.js");
 
 var _axios = _interopRequireDefault(require("axios"));
 
-var _promises = require("fs/promises");
-
 var _path = _interopRequireDefault(require("path"));
+
+var _fs = require("fs");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
+var readFile = _fs.promises.readFile,
+    writeFile = _fs.promises.writeFile;
 
 var CONFIG_DIR = _path["default"].join(__dirname, 'config');
 /**
@@ -58,7 +61,7 @@ var getLocalApi = /*#__PURE__*/function () {
           case 0:
             _context.prev = 0;
             _context.next = 3;
-            return (0, _promises.readFile)("".concat(CONFIG_DIR, "/api"), 'utf-8');
+            return readFile("".concat(CONFIG_DIR, "/api"), 'utf-8');
 
           case 3:
             api = _context.sent;
@@ -175,7 +178,7 @@ var getAccountInfo = /*#__PURE__*/function () {
           case 0:
             _context4.prev = 0;
             _context4.next = 3;
-            return (0, _promises.readFile)("".concat(CONFIG_DIR, "/account"), 'utf-8');
+            return readFile("".concat(CONFIG_DIR, "/account"), 'utf-8');
 
           case 3:
             res = _context4.sent;
@@ -280,7 +283,7 @@ var getCookie = /*#__PURE__*/function () {
           case 0:
             _context6.prev = 0;
             _context6.next = 3;
-            return (0, _promises.readFile)("".concat(CONFIG_DIR, "/cookie"), 'utf8');
+            return readFile("".concat(CONFIG_DIR, "/cookie"), 'utf8');
 
           case 3:
             localCookie = _context6.sent;
@@ -305,7 +308,7 @@ var getCookie = /*#__PURE__*/function () {
           case 14:
             COOKIE = _context6.sent;
             _context6.next = 17;
-            return (0, _promises.writeFile)("".concat(CONFIG_DIR, "/cookie"), COOKIE);
+            return writeFile("".concat(CONFIG_DIR, "/cookie"), COOKIE);
 
           case 17:
             return _context6.abrupt("return", COOKIE);

@@ -1,6 +1,7 @@
 import axios from 'axios'
-import { readFile, writeFile } from 'fs/promises'
 import path from 'path'
+import { promises } from 'fs'
+const { readFile, writeFile } = promises
 
 const CONFIG_DIR = path.join(__dirname, 'config')
 
