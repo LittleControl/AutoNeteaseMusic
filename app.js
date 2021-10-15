@@ -1,6 +1,7 @@
-// import '@babel/polyfill'
 import axios from 'axios'
 import { readFile, writeFile } from 'fs/promises'
+
+const CONFIG_DIR = __dirname
 
 /**
  * @description: 获取api
@@ -8,7 +9,7 @@ import { readFile, writeFile } from 'fs/promises'
 const getLocalApi = async () => {
   let api
   try {
-    api = await readFile('./api', 'utf-8')
+    api = await readFile(`${CONFIG_DIR}/api`, 'utf-8')
   } catch (error) {
     api = 'https://api.littlecontrol.me'
   }
@@ -50,7 +51,7 @@ axios.interceptors.request.use(
  */
 const getAccountInfo = async () => {
   try {
-    const res = await readFile('./account', 'utf-8')
+    const res = await readFile(`${CONFIG_DIR}/account`, 'utf-8')
     const resArr = res.split('\r\n')
     return {
       phone: resArr[0],
@@ -92,13 +93,13 @@ const loginByPhone = async () => {
 
 const getCookie = async () => {
   try {
-    const localCookie = await readFile('./cookie', 'utf8')
+    const localCookie = await readFile(`${CONFIG_DIR}/cookie`, 'utf8')
     const { data } = await getLoginStatus(localCookie)
     if (data.account && data.profile) {
       return localCookie
     } else {
       const COOKIE = await loginByPhone()
-      await writeFile('./cookie', COOKIE)
+      await writeFile(`${CONFIG_DIR}/cookie`, COOKIE)
       return COOKIE
     }
   } catch (error) {
@@ -267,7 +268,7 @@ const checkInYunbei = async (api) => {
   return res
 }
 
-const main = async () => {
+export const main = async () => {
   let res
   try {
     const api = await getLocalApi()
@@ -280,8 +281,3 @@ const main = async () => {
   }
   return res
 }
-
-main().then(
-  (res) => console.log(res),
-  (error) => console.log(error)
-)
