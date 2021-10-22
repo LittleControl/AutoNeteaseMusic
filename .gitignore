@@ -2,3 +2,4 @@ node_modules/
 *.lock
 *prettierrc*
 Temp/
+Test/
