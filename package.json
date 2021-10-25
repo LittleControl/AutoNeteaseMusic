@@ -24,7 +24,8 @@
   "dependencies": {
     "@types/node": "^16.10.9",
     "axios": "^0.23.0",
-    "core-js": "^3.18.3"
+    "core-js": "^3.18.3",
+    "libphonenumber-js": "^1.9.38"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",

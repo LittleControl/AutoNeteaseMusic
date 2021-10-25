@@ -1,9 +1,10 @@
-import axios from 'axios'
-import path from 'path'
-import { promises } from 'fs'
+import axios from "axios"
+import path from "path"
+import parsePhoneNumber from "libphonenumber-js"
+import { promises } from "fs"
 const { readFile, writeFile } = promises
 
-const CONFIG_DIR = path.join(__dirname, 'config')
+const CONFIG_DIR = path.join(__dirname, "config")
 
 /**
  * @description: 获取api
@@ -11,9 +12,9 @@ const CONFIG_DIR = path.join(__dirname, 'config')
 const getLocalApi = async () => {
   let api
   try {
-    api = await readFile(`${CONFIG_DIR}/api`, 'utf-8')
+    api = await readFile(`${CONFIG_DIR}/api`, "utf-8")
   } catch (error) {
-    api = 'https://api.littlecontrol.me'
+    api = "https://api.littlecontrol.me"
   }
   return api
 }
@@ -28,14 +29,14 @@ axios.interceptors.request.use(
     /**
      * @description: 防止网易对IP的限制
      */
-    config.headers['X-Real-IP'] = '123.138.78.143'
+    config.headers["X-Real-IP"] = "123.138.78.143"
     const { method, url, params, data } = config
     config.params ??= {}
-    if (method?.toUpperCase() === 'POST') {
+    if (method?.toUpperCase() === "POST") {
       config.params.timestamp = Date.now()
-      config.params.realIP = '123.138.78.143'
+      config.params.realIP = "123.138.78.143"
     }
-    if (url?.includes('/login')) {
+    if (url?.includes("/login")) {
       return config
     }
     const COOKIE = await getCookie()
@@ -53,10 +54,14 @@ axios.interceptors.request.use(
  */
 const getAccountInfo = async () => {
   try {
-    const res = await readFile(`${CONFIG_DIR}/account`, 'utf-8')
-    const resArr = res.split('\r\n')
+    const res = await readFile(`${CONFIG_DIR}/account`, "utf-8")
+    const resArr = res.split("\r\n")
+    const parsedNumber = parsePhoneNumber(resArr[0], "CN")
+    const phone = parsedNumber?.formatNational().replace(/[() -]/g, "")
+    const countrycode = parsedNumber?.countryCallingCode
     return {
-      phone: resArr[0],
+      phone,
+      countrycode,
       password: resArr[1],
     }
   } catch (error) {
@@ -73,18 +78,14 @@ const loginByPhone = async () => {
     const api = await getLocalApi()
     const url = `${api}/login/cellphone`
     const accountInfo = await getAccountInfo()
-    const { phone, password } = accountInfo
     const { data } = await axios({
-      method: 'POST',
+      method: "POST",
       url,
-      data: {
-        phone,
-        password,
-      },
+      data: accountInfo,
     })
-    res = data?.cookie ?? ''
+    res = data?.cookie ?? ""
   } catch (error) {
-    res = ''
+    res = ""
   }
   return res
 }
@@ -95,7 +96,7 @@ const loginByPhone = async () => {
 
 const getCookie = async () => {
   try {
-    const localCookie = await readFile(`${CONFIG_DIR}/cookie`, 'utf8')
+    const localCookie = await readFile(`${CONFIG_DIR}/cookie`, "utf8")
     const { data } = await getLoginStatus(localCookie)
     if (data.account && data.profile) {
       return localCookie
@@ -116,7 +117,7 @@ const getLoginStatus = async (cookie) => {
   const api = await getLocalApi()
   const url = `${api}/login/status`
   const res = await axios({
-    method: 'POST',
+    method: "POST",
     url,
     data: {
       cookie,
@@ -131,7 +132,7 @@ const getLoginStatus = async (cookie) => {
 const getUserLevelInfo = async (api) => {
   const url = `${api}/user/level`
   const { data } = await axios({
-    method: 'POST',
+    method: "POST",
     url,
   })
   return data
@@ -145,11 +146,11 @@ const checkIn = async (api) => {
   let res
   try {
     res = await axios({
-      method: 'POST',
+      method: "POST",
       url,
     })
     res = await axios({
-      method: 'POST',
+      method: "POST",
       url,
       params: {
         type: 1,
@@ -167,7 +168,7 @@ const checkIn = async (api) => {
 const getDailyPlaylist = async (api) => {
   const url = `${api}/recommend/resource`
   const { data } = await axios({
-    method: 'POST',
+    method: "POST",
     url,
   })
   return data
@@ -179,7 +180,7 @@ const getDailyPlaylist = async (api) => {
 const getPlaylistContent = async (id, api) => {
   const url = `${api}/playlist/detail`
   const { data } = await axios({
-    method: 'POST',
+    method: "POST",
     url,
     params: {
       id,
@@ -200,7 +201,7 @@ const playDailyLists = async (api) => {
       const { privileges } = await getPlaylistContent(item.id, api)
       privileges.forEach(async (song) => {
         res = await axios({
-          method: 'POST',
+          method: "POST",
           url,
           params: {
             id: song.id,
@@ -222,7 +223,7 @@ const playDailyLists = async (api) => {
 const getDailySongs = async (api) => {
   const url = `${api}/recommend/songs`
   const { data } = await axios({
-    method: 'POST',
+    method: "POST",
     url,
   })
   return data.data
@@ -238,7 +239,7 @@ const playDailySongs = async (api) => {
   try {
     dailySongs.forEach(async (song) => {
       res = await axios({
-        method: 'POST',
+        method: "POST",
         url,
         params: {
           id: song.id,
@@ -261,7 +262,7 @@ const checkInYunbei = async (api) => {
   let res
   try {
     res = await axios({
-      method: 'POST',
+      method: "POST",
       url,
     })
   } catch (error) {
@@ -283,3 +284,8 @@ export const main = async () => {
   }
   return res
 }
+
+main().then(
+  (res) => console.log(res),
+  (error) => console.log(error)
+)
