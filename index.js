@@ -27,6 +27,8 @@ require("core-js/modules/es.regexp.exec.js");
 
 require("core-js/modules/es.string.split.js");
 
+require("core-js/modules/es.string.replace.js");
+
 require("core-js/modules/es.array.for-each.js");
 
 require("core-js/modules/web.dom-collections.for-each.js");
@@ -34,6 +36,8 @@ require("core-js/modules/web.dom-collections.for-each.js");
 var _axios = _interopRequireDefault(require("axios"));
 
 var _path = _interopRequireDefault(require("path"));
+
+var _libphonenumberJs = _interopRequireDefault(require("libphonenumber-js"));
 
 var _fs = require("fs");
 
@@ -46,7 +50,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 var readFile = _fs.promises.readFile,
     writeFile = _fs.promises.writeFile;
 
-var CONFIG_DIR = _path["default"].join(__dirname, 'config');
+var CONFIG_DIR = _path["default"].join(__dirname, "config");
 /**
  * @description: 获取api
  */
@@ -61,7 +65,7 @@ var getLocalApi = /*#__PURE__*/function () {
           case 0:
             _context.prev = 0;
             _context.next = 3;
-            return readFile("".concat(CONFIG_DIR, "/api"), 'utf-8');
+            return readFile("".concat(CONFIG_DIR, "/api"), "utf-8");
 
           case 3:
             api = _context.sent;
@@ -71,7 +75,7 @@ var getLocalApi = /*#__PURE__*/function () {
           case 6:
             _context.prev = 6;
             _context.t0 = _context["catch"](0);
-            api = 'https://api.littlecontrol.me';
+            api = "https://api.littlecontrol.me";
 
           case 9:
             return _context.abrupt("return", api);
@@ -107,16 +111,16 @@ _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
              * @description: 防止网易对IP的限制
              */
 
-            config.headers['X-Real-IP'] = '123.138.78.143';
+            config.headers["X-Real-IP"] = "123.138.78.143";
             method = config.method, url = config.url, params = config.params, data = config.data;
             (_config$params = config.params) !== null && _config$params !== void 0 ? _config$params : config.params = {};
 
-            if ((method === null || method === void 0 ? void 0 : method.toUpperCase()) === 'POST') {
+            if ((method === null || method === void 0 ? void 0 : method.toUpperCase()) === "POST") {
               config.params.timestamp = Date.now();
-              config.params.realIP = '123.138.78.143';
+              config.params.realIP = "123.138.78.143";
             }
 
-            if (!(url !== null && url !== void 0 && url.includes('/login'))) {
+            if (!(url !== null && url !== void 0 && url.includes("/login"))) {
               _context2.next = 7;
               break;
             }
@@ -171,34 +175,38 @@ _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
 
 var getAccountInfo = /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
-    var res, resArr;
+    var res, resArr, parsedNumber, phone, countrycode;
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
             _context4.prev = 0;
             _context4.next = 3;
-            return readFile("".concat(CONFIG_DIR, "/account"), 'utf-8');
+            return readFile("".concat(CONFIG_DIR, "/account"), "utf-8");
 
           case 3:
             res = _context4.sent;
-            resArr = res.split('\r\n');
+            resArr = res.split("\r\n");
+            parsedNumber = (0, _libphonenumberJs["default"])(resArr[0], "CN");
+            phone = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.formatNational().replace(/[() -]/g, "");
+            countrycode = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.countryCallingCode;
             return _context4.abrupt("return", {
-              phone: resArr[0],
+              phone: phone,
+              countrycode: countrycode,
               password: resArr[1]
             });
 
-          case 8:
-            _context4.prev = 8;
+          case 11:
+            _context4.prev = 11;
             _context4.t0 = _context4["catch"](0);
             return _context4.abrupt("return", _context4.t0);
 
-          case 11:
+          case 14:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 8]]);
+    }, _callee4, null, [[0, 11]]);
   }));
 
   return function getAccountInfo() {
@@ -212,7 +220,7 @@ var getAccountInfo = /*#__PURE__*/function () {
 
 var loginByPhone = /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
-    var res, _data$cookie, api, url, accountInfo, phone, password, _yield$axios, data;
+    var res, _data$cookie, api, url, accountInfo, _yield$axios, data;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
@@ -230,38 +238,34 @@ var loginByPhone = /*#__PURE__*/function () {
 
           case 7:
             accountInfo = _context5.sent;
-            phone = accountInfo.phone, password = accountInfo.password;
-            _context5.next = 11;
+            _context5.next = 10;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url,
-              data: {
-                phone: phone,
-                password: password
-              }
+              data: accountInfo
             });
 
-          case 11:
+          case 10:
             _yield$axios = _context5.sent;
             data = _yield$axios.data;
-            res = (_data$cookie = data === null || data === void 0 ? void 0 : data.cookie) !== null && _data$cookie !== void 0 ? _data$cookie : '';
-            _context5.next = 19;
+            res = (_data$cookie = data === null || data === void 0 ? void 0 : data.cookie) !== null && _data$cookie !== void 0 ? _data$cookie : "";
+            _context5.next = 18;
             break;
 
-          case 16:
-            _context5.prev = 16;
+          case 15:
+            _context5.prev = 15;
             _context5.t0 = _context5["catch"](0);
-            res = '';
+            res = "";
 
-          case 19:
+          case 18:
             return _context5.abrupt("return", res);
 
-          case 20:
+          case 19:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[0, 16]]);
+    }, _callee5, null, [[0, 15]]);
   }));
 
   return function loginByPhone() {
@@ -283,7 +287,7 @@ var getCookie = /*#__PURE__*/function () {
           case 0:
             _context6.prev = 0;
             _context6.next = 3;
-            return readFile("".concat(CONFIG_DIR, "/cookie"), 'utf8');
+            return readFile("".concat(CONFIG_DIR, "/cookie"), "utf8");
 
           case 3:
             localCookie = _context6.sent;
@@ -354,7 +358,7 @@ var getLoginStatus = /*#__PURE__*/function () {
             url = "".concat(api, "/login/status");
             _context7.next = 6;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url,
               data: {
                 cookie: cookie
@@ -393,7 +397,7 @@ var getUserLevelInfo = /*#__PURE__*/function () {
             url = "".concat(api, "/user/level");
             _context8.next = 3;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url
             });
 
@@ -432,7 +436,7 @@ var checkIn = /*#__PURE__*/function () {
             _context9.prev = 1;
             _context9.next = 4;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url
             });
 
@@ -440,7 +444,7 @@ var checkIn = /*#__PURE__*/function () {
             res = _context9.sent;
             _context9.next = 7;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url,
               params: {
                 type: 1
@@ -488,7 +492,7 @@ var getDailyPlaylist = /*#__PURE__*/function () {
             url = "".concat(api, "/recommend/resource");
             _context10.next = 3;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url
             });
 
@@ -525,7 +529,7 @@ var getPlaylistContent = /*#__PURE__*/function () {
             url = "".concat(api, "/playlist/detail");
             _context11.next = 3;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url,
               params: {
                 id: id
@@ -593,7 +597,7 @@ var playDailyLists = /*#__PURE__*/function () {
                                     case 0:
                                       _context12.next = 2;
                                       return (0, _axios["default"])({
-                                        method: 'POST',
+                                        method: "POST",
                                         url: url,
                                         params: {
                                           id: song.id,
@@ -664,7 +668,7 @@ var getDailySongs = /*#__PURE__*/function () {
             url = "".concat(api, "/recommend/songs");
             _context15.next = 3;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url
             });
 
@@ -715,7 +719,7 @@ var playDailySongs = /*#__PURE__*/function () {
                         case 0:
                           _context16.next = 2;
                           return (0, _axios["default"])({
-                            method: 'POST',
+                            method: "POST",
                             url: url,
                             params: {
                               id: song.id,
@@ -773,7 +777,7 @@ var checkInYunbei = /*#__PURE__*/function () {
             _context18.prev = 1;
             _context18.next = 4;
             return (0, _axios["default"])({
-              method: 'POST',
+              method: "POST",
               url: url
             });
 
@@ -861,3 +865,8 @@ var main = /*#__PURE__*/function () {
 }();
 
 exports.main = main;
+main().then(function (res) {
+  return console.log(res);
+}, function (error) {
+  return console.log(error);
+});
