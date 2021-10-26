@@ -21,6 +21,11 @@
       ]
     ]
   },
+  "prettier": {
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  },
   "dependencies": {
     "@types/node": "^16.10.9",
     "axios": "^0.23.0",
