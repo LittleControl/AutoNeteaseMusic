@@ -30,7 +30,8 @@
     "@types/node": "^16.10.9",
     "axios": "^0.23.0",
     "core-js": "^3.18.3",
-    "libphonenumber-js": "^1.9.38"
+    "libphonenumber-js": "^1.9.38",
+    "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {
     "@babel/cli": "^7.15.7",
