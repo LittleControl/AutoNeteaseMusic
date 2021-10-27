@@ -9,14 +9,15 @@ const CONFIG_DIR = path.join(__dirname, 'config')
 /**
  * @description: 获取api
  */
-const getLocalApi = async () => {
+const getLocalApi = async (dir) => {
   let api
   try {
-    const content = await readFile(`${CONFIG_DIR}/api`, 'utf-8')
+    const content = await readFile(`${dir}/api`, 'utf-8')
     api = content.split('\n')[0]
   } catch (error) {
     api = 'https://api.littlecontrol.me'
   }
+  console.log(api)
   return api
 }
 
@@ -27,9 +28,7 @@ axios.interceptors.request.use(
   async (config) => {
     config.withCredentials = true
 
-    /**
-     * @description: 防止网易对IP的限制
-     */
+    //防止网易对IP的限制
     config.headers['X-Real-IP'] = '123.138.78.143'
     const { method, url } = config
     config.params ??= {}
@@ -40,7 +39,7 @@ axios.interceptors.request.use(
     if (url?.includes('/login')) {
       return config
     }
-    const COOKIE = await getCookie()
+    const COOKIE = await getCookie(CONFIG_DIR)
     config.data ??= {}
     config.data.cookie = COOKIE
     return config
@@ -53,78 +52,85 @@ axios.interceptors.request.use(
 /**
  * @description: 从文件读取账户信息
  */
-const getAccountInfo = async () => {
-  const res = await readFile(`${CONFIG_DIR}/account`, 'utf-8')
-  const resArr = res.split('\n')
-  const parsedNumber = parsePhoneNumber(resArr[0], 'CN')
-  const phone = parsedNumber?.formatNational().replace(/[()\s-]/g, '')
-  const countrycode = parsedNumber?.countryCallingCode
-  return {
-    phone,
-    countrycode,
-    password: resArr[1],
+const getAccountInfo = async (dir) => {
+  try {
+    const res = await readFile(`${dir}/account`, 'utf-8')
+    const resArr = res.split('\n')
+    const parsedNumber = parsePhoneNumber(resArr[0], 'CN')
+    const phone = parsedNumber?.formatNational().replace(/[()\s-]/g, '')
+    const countrycode = parsedNumber?.countryCallingCode
+    return {
+      phone,
+      countrycode,
+      password: resArr[1],
+    }
+  } catch (error) {
+    console.log('读取用户账户密码失败')
+    return {}
   }
 }
 
 /**
  * @description: 通过手机号登陆,以获取Cookie
  */
-const loginByPhone = async () => {
-  let res
-  const api = await getLocalApi()
+const loginByPhone = async (dir) => {
+  const api = await getLocalApi(dir)
   const url = `${api}/login/cellphone`
-  const accountInfo = await getAccountInfo()
-  const { data } = await axios({
-    method: 'POST',
-    url,
-    data: accountInfo,
-  })
-  res = data?.cookie ?? ''
-  return res
+  const accountInfo = await getAccountInfo(dir)
+  if (!accountInfo) return null
+  try {
+    const { data } = await axios({
+      method: 'POST',
+      url,
+      data: accountInfo,
+    })
+    return data?.cookie ?? ''
+  } catch (error) {
+    console.log(`error: ${error?.response?.data}`)
+    return ''
+  }
 }
 
 /**
  * @description: 获取Cookie
  */
 
-const getCookie = async () => {
-  const localCookie = await readFile(`${CONFIG_DIR}/cookie`, 'utf8')
-  const { data } = await getLoginStatus(localCookie)
-  if (data.account && data.profile) {
-    return localCookie
-  } else {
-    const COOKIE = await loginByPhone()
-    await writeFile(`${CONFIG_DIR}/cookie`, COOKIE)
-    return COOKIE
+const getCookie = async (dir) => {
+  try {
+    const localCookie = await readFile(`${dir}/cookie`, 'utf8')
+    const { data } = await getLoginStatus(dir, localCookie)
+    if (data.account && data.profile) {
+      return localCookie
+    } else {
+      const COOKIE = await loginByPhone(dir)
+      await writeFile(`${dir}/cookie`, COOKIE)
+      return COOKIE
+    }
+  } catch (error) {
+    console.log('cookie读取失败')
+    return ''
   }
 }
 
 /**
  * @description: 获取用户登陆状态
  */
-const getLoginStatus = async (cookie) => {
-  const api = await getLocalApi()
+const getLoginStatus = async (dir, cookie) => {
+  const api = await getLocalApi(dir)
   const url = `${api}/login/status`
-  const res = await axios({
-    method: 'POST',
-    url,
-    data: {
-      cookie,
-    },
-  })
-  return res.data
-}
-
-/**
- * @description: 获取用户等级相关信息
- */
-const getUserLevelInfo = async (api) => {
-  const url = `${api}/user/level`
-  const { data } = await axios({
-    method: 'POST',
-    url,
-  })
-  return data
+  try {
+    const res = await axios({
+      method: 'POST',
+      url,
+      data: {
+        cookie,
+      },
+    })
+    return res.data
+  } catch (error) {
+    console.log(`error: ${error?.response?.data}`)
+    return {}
+  }
 }
 
 /**
@@ -133,20 +139,30 @@ const getUserLevelInfo = async (api) => {
 const checkIn = async (api) => {
   const url = `${api}/daily_signin`
   let res
-  res = await axios({
-    method: 'POST',
-    url,
-  })
-  console.log('Android端签到完成')
-  res = await axios({
-    method: 'POST',
-    url,
-    params: {
-      type: 1,
-    },
-  })
-  console.log('Web/PC端签到完成')
-  return res.data ?? res
+  try {
+    res = await axios({
+      method: 'POST',
+      url,
+    })
+    console.log('Android端签到完成')
+  } catch (error) {
+    console.log(`Android端签到失败, error: ${error?.response?.data}`)
+    res = error?.response?.data
+  }
+  try {
+    res = await axios({
+      method: 'POST',
+      url,
+      params: {
+        type: 1,
+      },
+    })
+    console.log('Web/PC端签到完成')
+  } catch (error) {
+    console.log(`Web/PC端签到失败, error: ${error?.response?.data}`)
+    res = error?.response?.data
+  }
+  return res
 }
 
 /**
@@ -154,11 +170,16 @@ const checkIn = async (api) => {
  */
 const getDailyPlaylist = async (api) => {
   const url = `${api}/recommend/resource`
-  const { data } = await axios({
-    method: 'POST',
-    url,
-  })
-  return data
+  try {
+    const { data } = await axios({
+      method: 'POST',
+      url,
+    })
+    return data
+  } catch (error) {
+    console.log(`获取每日推荐歌单失败, error: ${error?.response?.data}`)
+    return {}
+  }
 }
 
 /**
@@ -166,14 +187,19 @@ const getDailyPlaylist = async (api) => {
  */
 const getPlaylistContent = async (id, api) => {
   const url = `${api}/playlist/detail`
-  const { data } = await axios({
-    method: 'POST',
-    url,
-    params: {
-      id,
-    },
-  })
-  return data
+  try {
+    const { data } = await axios({
+      method: 'POST',
+      url,
+      params: {
+        id,
+      },
+    })
+    return data
+  } catch (error) {
+    console.log(`获取歌单详情失败, error: ${error?.response?.data}`)
+    return {}
+  }
 }
 
 /**
@@ -182,23 +208,28 @@ const getPlaylistContent = async (id, api) => {
 const playDailyLists = async (api) => {
   const url = `${api}/scrobble`
   const { recommend } = await getDailyPlaylist(api)
-  let res
-  recommend.forEach(async (item) => {
-    const { privileges } = await getPlaylistContent(item.id, api)
-    privileges.forEach(async (song) => {
-      res = await axios({
-        method: 'POST',
-        url,
-        params: {
-          id: song.id,
-          sourceid: item.id,
-          time: 1000,
-        },
+  if (!recommend) return
+  try {
+    recommend.forEach(async (item) => {
+      const { privileges } = await getPlaylistContent(item.id, api)
+      privileges.forEach(async (song) => {
+        await axios({
+          method: 'POST',
+          url,
+          params: {
+            id: song.id,
+            sourceid: item.id,
+            time: 1000,
+          },
+        })
       })
     })
-  })
-  console.log('每日推荐歌单完成')
-  return res
+    console.log('每日推荐歌单刷取完成')
+    return '每日推荐歌单刷取完成'
+  } catch (error) {
+    console.log(`每日推荐歌单刷取失败,error: ${error?.response?.data}`)
+    return '每日推荐歌单刷取失败'
+  }
 }
 
 /**
@@ -206,11 +237,15 @@ const playDailyLists = async (api) => {
  */
 const getDailySongs = async (api) => {
   const url = `${api}/recommend/songs`
-  const { data } = await axios({
-    method: 'POST',
-    url,
-  })
-  return data.data
+  try {
+    const { data } = await axios({
+      method: 'POST',
+      url,
+    })
+    return data.data
+  } catch (error) {
+    console.log(`获取每日推荐歌曲失败, error: ${error?.response?.data}`)
+  }
 }
 
 /**
@@ -219,20 +254,25 @@ const getDailySongs = async (api) => {
 const playDailySongs = async (api) => {
   const url = `${api}/scrobble`
   const { dailySongs } = await getDailySongs(api)
-  let res
-  dailySongs.forEach(async (song) => {
-    res = await axios({
-      method: 'POST',
-      url,
-      params: {
-        id: song.id,
-        sourceid: song.al.id,
-        time: 500,
-      },
+  if (!dailySongs) return
+  try {
+    dailySongs.forEach(async (song) => {
+      await axios({
+        method: 'POST',
+        url,
+        params: {
+          id: song.id,
+          sourceid: song.al.id,
+          time: 500,
+        },
+      })
     })
-  })
-  console.log('每日推荐歌曲完成')
-  return res
+    console.log('每日推荐歌曲刷取完成')
+    return '每日推荐歌曲刷取完成'
+  } catch (error) {
+    console.log(`每日推荐歌曲刷取失败,error: ${error?.response?.data}`)
+    return '每日推荐歌曲刷取失败'
+  }
 }
 
 /**
@@ -241,12 +281,17 @@ const playDailySongs = async (api) => {
 const checkInYunbei = async (api) => {
   const url = `${api}/yunbei/sign`
   let res
-  res = await axios({
-    method: 'POST',
-    url,
-  })
-  console.log('云贝签到完成')
-  return res
+  try {
+    res = await axios({
+      method: 'POST',
+      url,
+    })
+    console.log('云贝签到完成')
+    return '云贝签到完成'
+  } catch (error) {
+    console.log(`云贝签到失败, error: ${error?.response?.data}`)
+    return '云贝签到失败'
+  }
 }
 
 export const main = async (event, context, callback) => {
@@ -259,7 +304,9 @@ export const main = async (event, context, callback) => {
     res.push(await checkIn(api))
     res.push(await checkInYunbei(api))
   } catch (error) {
-    res.push(error?.response?.data)
+    res.push(error)
   }
   callback(null, res)
 }
+
+main({}, {}, ({}, res) => console.log(res))
