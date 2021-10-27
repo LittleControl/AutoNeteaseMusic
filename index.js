@@ -50,7 +50,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 var readFile = _fs.promises.readFile,
     writeFile = _fs.promises.writeFile;
 
-var CONFIG_DIR = _path["default"].join(__dirname, "config");
+var CONFIG_DIR = _path["default"].join(__dirname, 'config');
 /**
  * @description: 获取api
  */
@@ -58,34 +58,18 @@ var CONFIG_DIR = _path["default"].join(__dirname, "config");
 
 var getLocalApi = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-    var api;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            _context.prev = 0;
-            _context.next = 3;
-            return readFile("".concat(CONFIG_DIR, "/api"), "utf-8");
+            return _context.abrupt("return", 'https://api.littlecontrol.me');
 
-          case 3:
-            api = _context.sent;
-            _context.next = 9;
-            break;
-
-          case 6:
-            _context.prev = 6;
-            _context.t0 = _context["catch"](0);
-            api = "https://api.littlecontrol.me";
-
-          case 9:
-            return _context.abrupt("return", api);
-
-          case 10:
+          case 1:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[0, 6]]);
+    }, _callee);
   }));
 
   return function getLocalApi() {
@@ -111,16 +95,16 @@ _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
              * @description: 防止网易对IP的限制
              */
 
-            config.headers["X-Real-IP"] = "123.138.78.143";
+            config.headers['X-Real-IP'] = '123.138.78.143';
             method = config.method, url = config.url, params = config.params, data = config.data;
             (_config$params = config.params) !== null && _config$params !== void 0 ? _config$params : config.params = {};
 
-            if ((method === null || method === void 0 ? void 0 : method.toUpperCase()) === "POST") {
+            if ((method === null || method === void 0 ? void 0 : method.toUpperCase()) === 'POST') {
               config.params.timestamp = Date.now();
-              config.params.realIP = "123.138.78.143";
+              config.params.realIP = '123.138.78.143';
             }
 
-            if (!(url !== null && url !== void 0 && url.includes("/login"))) {
+            if (!(url !== null && url !== void 0 && url.includes('/login'))) {
               _context2.next = 7;
               break;
             }
@@ -180,15 +164,14 @@ var getAccountInfo = /*#__PURE__*/function () {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.prev = 0;
-            _context4.next = 3;
-            return readFile("".concat(CONFIG_DIR, "/account"), "utf-8");
+            _context4.next = 2;
+            return readFile("".concat(CONFIG_DIR, "/account"), 'utf-8');
 
-          case 3:
+          case 2:
             res = _context4.sent;
-            resArr = res.split("\r\n");
-            parsedNumber = (0, _libphonenumberJs["default"])(resArr[0], "CN");
-            phone = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.formatNational().replace(/[() -]/g, "");
+            resArr = res.split('\r\n');
+            parsedNumber = (0, _libphonenumberJs["default"])(resArr[0], 'CN');
+            phone = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.formatNational().replace(/[()\s-]/g, '');
             countrycode = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.countryCallingCode;
             return _context4.abrupt("return", {
               phone: phone,
@@ -196,17 +179,12 @@ var getAccountInfo = /*#__PURE__*/function () {
               password: resArr[1]
             });
 
-          case 11:
-            _context4.prev = 11;
-            _context4.t0 = _context4["catch"](0);
-            return _context4.abrupt("return", _context4.t0);
-
-          case 14:
+          case 8:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 11]]);
+    }, _callee4);
   }));
 
   return function getAccountInfo() {
@@ -220,52 +198,44 @@ var getAccountInfo = /*#__PURE__*/function () {
 
 var loginByPhone = /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
-    var res, _data$cookie, api, url, accountInfo, _yield$axios, data;
+    var _data$cookie;
+
+    var res, api, url, accountInfo, _yield$axios, data;
 
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
-            _context5.prev = 0;
-            _context5.next = 3;
+            _context5.next = 2;
             return getLocalApi();
 
-          case 3:
+          case 2:
             api = _context5.sent;
             url = "".concat(api, "/login/cellphone");
-            _context5.next = 7;
+            _context5.next = 6;
             return getAccountInfo();
 
-          case 7:
+          case 6:
             accountInfo = _context5.sent;
-            _context5.next = 10;
+            _context5.next = 9;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url,
               data: accountInfo
             });
 
-          case 10:
+          case 9:
             _yield$axios = _context5.sent;
             data = _yield$axios.data;
-            res = (_data$cookie = data === null || data === void 0 ? void 0 : data.cookie) !== null && _data$cookie !== void 0 ? _data$cookie : "";
-            _context5.next = 18;
-            break;
-
-          case 15:
-            _context5.prev = 15;
-            _context5.t0 = _context5["catch"](0);
-            res = "";
-
-          case 18:
+            res = (_data$cookie = data === null || data === void 0 ? void 0 : data.cookie) !== null && _data$cookie !== void 0 ? _data$cookie : '';
             return _context5.abrupt("return", res);
 
-          case 19:
+          case 13:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[0, 15]]);
+    }, _callee5);
   }));
 
   return function loginByPhone() {
@@ -285,53 +255,43 @@ var getCookie = /*#__PURE__*/function () {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
-            _context6.prev = 0;
-            _context6.next = 3;
-            return readFile("".concat(CONFIG_DIR, "/cookie"), "utf8");
+            _context6.next = 2;
+            return readFile("".concat(CONFIG_DIR, "/cookie"), 'utf8');
 
-          case 3:
+          case 2:
             localCookie = _context6.sent;
-            _context6.next = 6;
+            _context6.next = 5;
             return getLoginStatus(localCookie);
 
-          case 6:
+          case 5:
             _yield$getLoginStatus = _context6.sent;
             data = _yield$getLoginStatus.data;
 
             if (!(data.account && data.profile)) {
-              _context6.next = 12;
+              _context6.next = 11;
               break;
             }
 
             return _context6.abrupt("return", localCookie);
 
-          case 12:
-            _context6.next = 14;
+          case 11:
+            _context6.next = 13;
             return loginByPhone();
 
-          case 14:
+          case 13:
             COOKIE = _context6.sent;
-            _context6.next = 17;
+            _context6.next = 16;
             return writeFile("".concat(CONFIG_DIR, "/cookie"), COOKIE);
 
-          case 17:
+          case 16:
             return _context6.abrupt("return", COOKIE);
 
-          case 18:
-            _context6.next = 23;
-            break;
-
-          case 20:
-            _context6.prev = 20;
-            _context6.t0 = _context6["catch"](0);
-            return _context6.abrupt("return", _context6.t0);
-
-          case 23:
+          case 17:
           case "end":
             return _context6.stop();
         }
       }
-    }, _callee6, null, [[0, 20]]);
+    }, _callee6);
   }));
 
   return function getCookie() {
@@ -358,7 +318,7 @@ var getLoginStatus = /*#__PURE__*/function () {
             url = "".concat(api, "/login/status");
             _context7.next = 6;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url,
               data: {
                 cookie: cookie
@@ -397,7 +357,7 @@ var getUserLevelInfo = /*#__PURE__*/function () {
             url = "".concat(api, "/user/level");
             _context8.next = 3;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url
             });
 
@@ -432,44 +392,37 @@ var checkIn = /*#__PURE__*/function () {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
+            console.log('checkin in');
             url = "".concat(api, "/daily_signin");
-            _context9.prev = 1;
             _context9.next = 4;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url
             });
 
           case 4:
             res = _context9.sent;
-            _context9.next = 7;
+            console.log('Web/PC checkin fininshed');
+            _context9.next = 8;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url,
               params: {
                 type: 1
               }
             });
 
-          case 7:
+          case 8:
             res = _context9.sent;
-            _context9.next = 13;
-            break;
-
-          case 10:
-            _context9.prev = 10;
-            _context9.t0 = _context9["catch"](1);
-            res = _context9.t0;
-
-          case 13:
+            console.log('Android check finished');
             return _context9.abrupt("return", (_res$data = res.data) !== null && _res$data !== void 0 ? _res$data : res);
 
-          case 14:
+          case 11:
           case "end":
             return _context9.stop();
         }
       }
-    }, _callee9, null, [[1, 10]]);
+    }, _callee9);
   }));
 
   return function checkIn(_x5) {
@@ -492,7 +445,7 @@ var getDailyPlaylist = /*#__PURE__*/function () {
             url = "".concat(api, "/recommend/resource");
             _context10.next = 3;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url
             });
 
@@ -529,7 +482,7 @@ var getPlaylistContent = /*#__PURE__*/function () {
             url = "".concat(api, "/playlist/detail");
             _context11.next = 3;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url,
               params: {
                 id: id
@@ -573,71 +526,65 @@ var playDailyLists = /*#__PURE__*/function () {
           case 3:
             _yield$getDailyPlayli = _context14.sent;
             recommend = _yield$getDailyPlayli.recommend;
+            recommend.forEach( /*#__PURE__*/function () {
+              var _ref13 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13(item) {
+                var _yield$getPlaylistCon, privileges;
 
-            try {
-              recommend.forEach( /*#__PURE__*/function () {
-                var _ref13 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13(item) {
-                  var _yield$getPlaylistCon, privileges;
+                return regeneratorRuntime.wrap(function _callee13$(_context13) {
+                  while (1) {
+                    switch (_context13.prev = _context13.next) {
+                      case 0:
+                        _context13.next = 2;
+                        return getPlaylistContent(item.id, api);
 
-                  return regeneratorRuntime.wrap(function _callee13$(_context13) {
-                    while (1) {
-                      switch (_context13.prev = _context13.next) {
-                        case 0:
-                          _context13.next = 2;
-                          return getPlaylistContent(item.id, api);
+                      case 2:
+                        _yield$getPlaylistCon = _context13.sent;
+                        privileges = _yield$getPlaylistCon.privileges;
+                        privileges.forEach( /*#__PURE__*/function () {
+                          var _ref14 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(song) {
+                            return regeneratorRuntime.wrap(function _callee12$(_context12) {
+                              while (1) {
+                                switch (_context12.prev = _context12.next) {
+                                  case 0:
+                                    _context12.next = 2;
+                                    return (0, _axios["default"])({
+                                      method: 'POST',
+                                      url: url,
+                                      params: {
+                                        id: song.id,
+                                        sourceid: item.id,
+                                        time: 500
+                                      }
+                                    });
 
-                        case 2:
-                          _yield$getPlaylistCon = _context13.sent;
-                          privileges = _yield$getPlaylistCon.privileges;
-                          privileges.forEach( /*#__PURE__*/function () {
-                            var _ref14 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(song) {
-                              return regeneratorRuntime.wrap(function _callee12$(_context12) {
-                                while (1) {
-                                  switch (_context12.prev = _context12.next) {
-                                    case 0:
-                                      _context12.next = 2;
-                                      return (0, _axios["default"])({
-                                        method: "POST",
-                                        url: url,
-                                        params: {
-                                          id: song.id,
-                                          sourceid: item.id,
-                                          time: 500
-                                        }
-                                      });
+                                  case 2:
+                                    res = _context12.sent;
 
-                                    case 2:
-                                      res = _context12.sent;
-
-                                    case 3:
-                                    case "end":
-                                      return _context12.stop();
-                                  }
+                                  case 3:
+                                  case "end":
+                                    return _context12.stop();
                                 }
-                              }, _callee12);
-                            }));
+                              }
+                            }, _callee12);
+                          }));
 
-                            return function (_x11) {
-                              return _ref14.apply(this, arguments);
-                            };
-                          }());
+                          return function (_x11) {
+                            return _ref14.apply(this, arguments);
+                          };
+                        }());
 
-                        case 5:
-                        case "end":
-                          return _context13.stop();
-                      }
+                      case 5:
+                      case "end":
+                        return _context13.stop();
                     }
-                  }, _callee13);
-                }));
+                  }
+                }, _callee13);
+              }));
 
-                return function (_x10) {
-                  return _ref13.apply(this, arguments);
-                };
-              }());
-            } catch (error) {
-              res = error;
-            }
-
+              return function (_x10) {
+                return _ref13.apply(this, arguments);
+              };
+            }());
             return _context14.abrupt("return", res);
 
           case 7:
@@ -668,7 +615,7 @@ var getDailySongs = /*#__PURE__*/function () {
             url = "".concat(api, "/recommend/songs");
             _context15.next = 3;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url
             });
 
@@ -709,44 +656,38 @@ var playDailySongs = /*#__PURE__*/function () {
           case 3:
             _yield$getDailySongs = _context17.sent;
             dailySongs = _yield$getDailySongs.dailySongs;
+            dailySongs.forEach( /*#__PURE__*/function () {
+              var _ref17 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee16(song) {
+                return regeneratorRuntime.wrap(function _callee16$(_context16) {
+                  while (1) {
+                    switch (_context16.prev = _context16.next) {
+                      case 0:
+                        _context16.next = 2;
+                        return (0, _axios["default"])({
+                          method: 'POST',
+                          url: url,
+                          params: {
+                            id: song.id,
+                            sourceid: song.al.id,
+                            time: 500
+                          }
+                        });
 
-            try {
-              dailySongs.forEach( /*#__PURE__*/function () {
-                var _ref17 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee16(song) {
-                  return regeneratorRuntime.wrap(function _callee16$(_context16) {
-                    while (1) {
-                      switch (_context16.prev = _context16.next) {
-                        case 0:
-                          _context16.next = 2;
-                          return (0, _axios["default"])({
-                            method: "POST",
-                            url: url,
-                            params: {
-                              id: song.id,
-                              sourceid: song.al.id,
-                              time: 500
-                            }
-                          });
+                      case 2:
+                        res = _context16.sent;
 
-                        case 2:
-                          res = _context16.sent;
-
-                        case 3:
-                        case "end":
-                          return _context16.stop();
-                      }
+                      case 3:
+                      case "end":
+                        return _context16.stop();
                     }
-                  }, _callee16);
-                }));
+                  }
+                }, _callee16);
+              }));
 
-                return function (_x14) {
-                  return _ref17.apply(this, arguments);
-                };
-              }());
-            } catch (error) {
-              res = error;
-            }
-
+              return function (_x14) {
+                return _ref17.apply(this, arguments);
+              };
+            }());
             return _context17.abrupt("return", res);
 
           case 7:
@@ -774,32 +715,22 @@ var checkInYunbei = /*#__PURE__*/function () {
         switch (_context18.prev = _context18.next) {
           case 0:
             url = "".concat(api, "/yunbei/sign");
-            _context18.prev = 1;
-            _context18.next = 4;
+            _context18.next = 3;
             return (0, _axios["default"])({
-              method: "POST",
+              method: 'POST',
               url: url
             });
 
-          case 4:
+          case 3:
             res = _context18.sent;
-            _context18.next = 10;
-            break;
-
-          case 7:
-            _context18.prev = 7;
-            _context18.t0 = _context18["catch"](1);
-            res = _context18.t0;
-
-          case 10:
             return _context18.abrupt("return", res);
 
-          case 11:
+          case 5:
           case "end":
             return _context18.stop();
         }
       }
-    }, _callee18, null, [[1, 7]]);
+    }, _callee18);
   }));
 
   return function checkInYunbei(_x15) {
@@ -807,66 +738,157 @@ var checkInYunbei = /*#__PURE__*/function () {
   };
 }();
 
-var main = /*#__PURE__*/function () {
+var dailyTask = /*#__PURE__*/function () {
   var _ref19 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee19() {
-    var res, api;
+    var res, api, _error$response;
+
     return regeneratorRuntime.wrap(function _callee19$(_context19) {
       while (1) {
         switch (_context19.prev = _context19.next) {
           case 0:
-            _context19.prev = 0;
-            _context19.next = 3;
+            res = [];
+            _context19.prev = 1;
+            _context19.next = 4;
             return getLocalApi();
 
-          case 3:
+          case 4:
             api = _context19.sent;
-            _context19.next = 6;
-            return checkIn(api);
-
-          case 6:
-            res = _context19.sent;
-            _context19.next = 9;
-            return checkInYunbei(api);
-
-          case 9:
-            res = _context19.sent;
-            _context19.next = 12;
+            _context19.t0 = res;
+            _context19.next = 8;
             return playDailySongs(api);
 
-          case 12:
-            res = _context19.sent;
-            _context19.next = 15;
+          case 8:
+            _context19.t1 = _context19.sent;
+
+            _context19.t0.push.call(_context19.t0, _context19.t1);
+
+            _context19.t2 = res;
+            _context19.next = 13;
             return playDailyLists(api);
 
-          case 15:
-            res = _context19.sent;
-            _context19.next = 21;
-            break;
+          case 13:
+            _context19.t3 = _context19.sent;
+
+            _context19.t2.push.call(_context19.t2, _context19.t3);
+
+            _context19.t4 = res;
+            _context19.next = 18;
+            return checkIn(api);
 
           case 18:
-            _context19.prev = 18;
-            _context19.t0 = _context19["catch"](0);
-            res = _context19.t0;
+            _context19.t5 = _context19.sent;
 
-          case 21:
+            _context19.t4.push.call(_context19.t4, _context19.t5);
+
+            _context19.t6 = res;
+            _context19.next = 23;
+            return checkInYunbei(api);
+
+          case 23:
+            _context19.t7 = _context19.sent;
+
+            _context19.t6.push.call(_context19.t6, _context19.t7);
+
+            _context19.next = 30;
+            break;
+
+          case 27:
+            _context19.prev = 27;
+            _context19.t8 = _context19["catch"](1);
+            res.push(_context19.t8 === null || _context19.t8 === void 0 ? void 0 : (_error$response = _context19.t8.response) === null || _error$response === void 0 ? void 0 : _error$response.data);
+
+          case 30:
             return _context19.abrupt("return", res);
 
-          case 22:
+          case 31:
           case "end":
             return _context19.stop();
         }
       }
-    }, _callee19, null, [[0, 18]]);
+    }, _callee19, null, [[1, 27]]);
   }));
 
-  return function main() {
+  return function dailyTask() {
     return _ref19.apply(this, arguments);
   };
 }();
 
+var main = /*#__PURE__*/function () {
+  var _ref20 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee20(event, context) {
+    var res, api, _error$response2;
+
+    return regeneratorRuntime.wrap(function _callee20$(_context20) {
+      while (1) {
+        switch (_context20.prev = _context20.next) {
+          case 0:
+            context.callbackWaitsForEmptyEventLoop = false; // context.callbackWaitsForEmptyEventLoop = false
+
+            res = [];
+            _context20.prev = 2;
+            _context20.next = 5;
+            return getLocalApi();
+
+          case 5:
+            api = _context20.sent;
+            _context20.t0 = res;
+            _context20.next = 9;
+            return playDailySongs(api);
+
+          case 9:
+            _context20.t1 = _context20.sent;
+
+            _context20.t0.push.call(_context20.t0, _context20.t1);
+
+            _context20.t2 = res;
+            _context20.next = 14;
+            return playDailyLists(api);
+
+          case 14:
+            _context20.t3 = _context20.sent;
+
+            _context20.t2.push.call(_context20.t2, _context20.t3);
+
+            _context20.t4 = res;
+            _context20.next = 19;
+            return checkIn(api);
+
+          case 19:
+            _context20.t5 = _context20.sent;
+
+            _context20.t4.push.call(_context20.t4, _context20.t5);
+
+            _context20.t6 = res;
+            _context20.next = 24;
+            return checkInYunbei(api);
+
+          case 24:
+            _context20.t7 = _context20.sent;
+
+            _context20.t6.push.call(_context20.t6, _context20.t7);
+
+            _context20.next = 31;
+            break;
+
+          case 28:
+            _context20.prev = 28;
+            _context20.t8 = _context20["catch"](2);
+            res.push(_context20.t8 === null || _context20.t8 === void 0 ? void 0 : (_error$response2 = _context20.t8.response) === null || _error$response2 === void 0 ? void 0 : _error$response2.data);
+
+          case 31:
+            return _context20.abrupt("return", res);
+
+          case 32:
+          case "end":
+            return _context20.stop();
+        }
+      }
+    }, _callee20, null, [[2, 28]]);
+  }));
+
+  return function main(_x16, _x17) {
+    return _ref20.apply(this, arguments);
+  };
+}();
+
 exports.main = main;
-main().then(function (res) {
-  return console.log(res);
-}, function (error) {
-  return console.log(error);
-});
+main();
