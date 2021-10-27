@@ -11,6 +11,10 @@ require("regenerator-runtime/runtime.js");
 
 require("core-js/modules/es.array.join.js");
 
+require("core-js/modules/es.regexp.exec.js");
+
+require("core-js/modules/es.string.split.js");
+
 require("core-js/modules/es.date.now.js");
 
 require("core-js/modules/es.date.to-string.js");
@@ -22,10 +26,6 @@ require("core-js/modules/es.string.includes.js");
 require("core-js/modules/es.object.to-string.js");
 
 require("core-js/modules/es.promise.js");
-
-require("core-js/modules/es.regexp.exec.js");
-
-require("core-js/modules/es.string.split.js");
 
 require("core-js/modules/es.string.replace.js");
 
@@ -58,18 +58,35 @@ var CONFIG_DIR = _path["default"].join(__dirname, 'config');
 
 var getLocalApi = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+    var api, content;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            return _context.abrupt("return", 'https://api.littlecontrol.me');
+            _context.prev = 0;
+            _context.next = 3;
+            return readFile("".concat(CONFIG_DIR, "/api"), 'utf-8');
 
-          case 1:
+          case 3:
+            content = _context.sent;
+            api = content.split('\n')[0];
+            _context.next = 10;
+            break;
+
+          case 7:
+            _context.prev = 7;
+            _context.t0 = _context["catch"](0);
+            api = 'https://api.littlecontrol.me';
+
+          case 10:
+            return _context.abrupt("return", api);
+
+          case 11:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee);
+    }, _callee, null, [[0, 7]]);
   }));
 
   return function getLocalApi() {
@@ -85,7 +102,7 @@ _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(config) {
     var _config$params, _config$data;
 
-    var method, url, params, data, COOKIE;
+    var method, url, COOKIE;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
@@ -96,7 +113,7 @@ _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
              */
 
             config.headers['X-Real-IP'] = '123.138.78.143';
-            method = config.method, url = config.url, params = config.params, data = config.data;
+            method = config.method, url = config.url;
             (_config$params = config.params) !== null && _config$params !== void 0 ? _config$params : config.params = {};
 
             if ((method === null || method === void 0 ? void 0 : method.toUpperCase()) === 'POST') {
@@ -169,7 +186,7 @@ var getAccountInfo = /*#__PURE__*/function () {
 
           case 2:
             res = _context4.sent;
-            resArr = res.split('\r\n');
+            resArr = res.split('\n');
             parsedNumber = (0, _libphonenumberJs["default"])(resArr[0], 'CN');
             phone = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.formatNational().replace(/[()\s-]/g, '');
             countrycode = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.countryCallingCode;
@@ -392,18 +409,17 @@ var checkIn = /*#__PURE__*/function () {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
-            console.log('checkin in');
             url = "".concat(api, "/daily_signin");
-            _context9.next = 4;
+            _context9.next = 3;
             return (0, _axios["default"])({
               method: 'POST',
               url: url
             });
 
-          case 4:
+          case 3:
             res = _context9.sent;
-            console.log('Web/PC checkin fininshed');
-            _context9.next = 8;
+            console.log('Android端签到完成');
+            _context9.next = 7;
             return (0, _axios["default"])({
               method: 'POST',
               url: url,
@@ -412,12 +428,12 @@ var checkIn = /*#__PURE__*/function () {
               }
             });
 
-          case 8:
+          case 7:
             res = _context9.sent;
-            console.log('Android check finished');
+            console.log('Web/PC端签到完成');
             return _context9.abrupt("return", (_res$data = res.data) !== null && _res$data !== void 0 ? _res$data : res);
 
-          case 11:
+          case 10:
           case "end":
             return _context9.stop();
         }
@@ -553,7 +569,7 @@ var playDailyLists = /*#__PURE__*/function () {
                                       params: {
                                         id: song.id,
                                         sourceid: item.id,
-                                        time: 500
+                                        time: 1000
                                       }
                                     });
 
@@ -585,9 +601,10 @@ var playDailyLists = /*#__PURE__*/function () {
                 return _ref13.apply(this, arguments);
               };
             }());
+            console.log('每日推荐歌单完成');
             return _context14.abrupt("return", res);
 
-          case 7:
+          case 8:
           case "end":
             return _context14.stop();
         }
@@ -688,9 +705,10 @@ var playDailySongs = /*#__PURE__*/function () {
                 return _ref17.apply(this, arguments);
               };
             }());
+            console.log('每日推荐歌曲完成');
             return _context17.abrupt("return", res);
 
-          case 7:
+          case 8:
           case "end":
             return _context17.stop();
         }
@@ -723,9 +741,10 @@ var checkInYunbei = /*#__PURE__*/function () {
 
           case 3:
             res = _context18.sent;
+            console.log('云贝签到完成');
             return _context18.abrupt("return", res);
 
-          case 5:
+          case 6:
           case "end":
             return _context18.stop();
         }
@@ -738,157 +757,80 @@ var checkInYunbei = /*#__PURE__*/function () {
   };
 }();
 
-var dailyTask = /*#__PURE__*/function () {
-  var _ref19 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee19() {
+var main = /*#__PURE__*/function () {
+  var _ref19 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee19(event, context, callback) {
     var res, api, _error$response;
 
     return regeneratorRuntime.wrap(function _callee19$(_context19) {
       while (1) {
         switch (_context19.prev = _context19.next) {
           case 0:
+            context.callbackWaitsForEmptyEventLoop = false;
             res = [];
-            _context19.prev = 1;
-            _context19.next = 4;
+            _context19.prev = 2;
+            _context19.next = 5;
             return getLocalApi();
 
-          case 4:
+          case 5:
             api = _context19.sent;
             _context19.t0 = res;
-            _context19.next = 8;
+            _context19.next = 9;
             return playDailySongs(api);
 
-          case 8:
+          case 9:
             _context19.t1 = _context19.sent;
 
             _context19.t0.push.call(_context19.t0, _context19.t1);
 
             _context19.t2 = res;
-            _context19.next = 13;
+            _context19.next = 14;
             return playDailyLists(api);
 
-          case 13:
+          case 14:
             _context19.t3 = _context19.sent;
 
             _context19.t2.push.call(_context19.t2, _context19.t3);
 
             _context19.t4 = res;
-            _context19.next = 18;
+            _context19.next = 19;
             return checkIn(api);
 
-          case 18:
+          case 19:
             _context19.t5 = _context19.sent;
 
             _context19.t4.push.call(_context19.t4, _context19.t5);
 
             _context19.t6 = res;
-            _context19.next = 23;
+            _context19.next = 24;
             return checkInYunbei(api);
 
-          case 23:
+          case 24:
             _context19.t7 = _context19.sent;
 
             _context19.t6.push.call(_context19.t6, _context19.t7);
 
-            _context19.next = 30;
+            _context19.next = 31;
             break;
 
-          case 27:
-            _context19.prev = 27;
-            _context19.t8 = _context19["catch"](1);
+          case 28:
+            _context19.prev = 28;
+            _context19.t8 = _context19["catch"](2);
             res.push(_context19.t8 === null || _context19.t8 === void 0 ? void 0 : (_error$response = _context19.t8.response) === null || _error$response === void 0 ? void 0 : _error$response.data);
 
-          case 30:
-            return _context19.abrupt("return", res);
-
           case 31:
+            callback(null, res);
+
+          case 32:
           case "end":
             return _context19.stop();
         }
       }
-    }, _callee19, null, [[1, 27]]);
+    }, _callee19, null, [[2, 28]]);
   }));
 
-  return function dailyTask() {
+  return function main(_x16, _x17, _x18) {
     return _ref19.apply(this, arguments);
   };
 }();
 
-var main = /*#__PURE__*/function () {
-  var _ref20 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee20(event, context) {
-    var res, api, _error$response2;
-
-    return regeneratorRuntime.wrap(function _callee20$(_context20) {
-      while (1) {
-        switch (_context20.prev = _context20.next) {
-          case 0:
-            context.callbackWaitsForEmptyEventLoop = false; // context.callbackWaitsForEmptyEventLoop = false
-
-            res = [];
-            _context20.prev = 2;
-            _context20.next = 5;
-            return getLocalApi();
-
-          case 5:
-            api = _context20.sent;
-            _context20.t0 = res;
-            _context20.next = 9;
-            return playDailySongs(api);
-
-          case 9:
-            _context20.t1 = _context20.sent;
-
-            _context20.t0.push.call(_context20.t0, _context20.t1);
-
-            _context20.t2 = res;
-            _context20.next = 14;
-            return playDailyLists(api);
-
-          case 14:
-            _context20.t3 = _context20.sent;
-
-            _context20.t2.push.call(_context20.t2, _context20.t3);
-
-            _context20.t4 = res;
-            _context20.next = 19;
-            return checkIn(api);
-
-          case 19:
-            _context20.t5 = _context20.sent;
-
-            _context20.t4.push.call(_context20.t4, _context20.t5);
-
-            _context20.t6 = res;
-            _context20.next = 24;
-            return checkInYunbei(api);
-
-          case 24:
-            _context20.t7 = _context20.sent;
-
-            _context20.t6.push.call(_context20.t6, _context20.t7);
-
-            _context20.next = 31;
-            break;
-
-          case 28:
-            _context20.prev = 28;
-            _context20.t8 = _context20["catch"](2);
-            res.push(_context20.t8 === null || _context20.t8 === void 0 ? void 0 : (_error$response2 = _context20.t8.response) === null || _error$response2 === void 0 ? void 0 : _error$response2.data);
-
-          case 31:
-            return _context20.abrupt("return", res);
-
-          case 32:
-          case "end":
-            return _context20.stop();
-        }
-      }
-    }, _callee20, null, [[2, 28]]);
-  }));
-
-  return function main(_x16, _x17) {
-    return _ref20.apply(this, arguments);
-  };
-}();
-
 exports.main = main;
-main();

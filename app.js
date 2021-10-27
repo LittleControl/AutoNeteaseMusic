@@ -10,14 +10,14 @@ const CONFIG_DIR = path.join(__dirname, 'config')
  * @description: 获取api
  */
 const getLocalApi = async () => {
-  // let api
-  // try {
-  //   api = await readFile(`${CONFIG_DIR}/api`, "utf-8")
-  // } catch (error) {
-  //   api = "https://api.littlecontrol.me"
-  // }
-  // return api
-  return 'https://api.littlecontrol.me'
+  let api
+  try {
+    const content = await readFile(`${CONFIG_DIR}/api`, 'utf-8')
+    api = content.split('\n')[0]
+  } catch (error) {
+    api = 'https://api.littlecontrol.me'
+  }
+  return api
 }
 
 /**
@@ -31,7 +31,7 @@ axios.interceptors.request.use(
      * @description: 防止网易对IP的限制
      */
     config.headers['X-Real-IP'] = '123.138.78.143'
-    const { method, url, params, data } = config
+    const { method, url } = config
     config.params ??= {}
     if (method?.toUpperCase() === 'POST') {
       config.params.timestamp = Date.now()
@@ -55,7 +55,7 @@ axios.interceptors.request.use(
  */
 const getAccountInfo = async () => {
   const res = await readFile(`${CONFIG_DIR}/account`, 'utf-8')
-  const resArr = res.split('\r\n')
+  const resArr = res.split('\n')
   const parsedNumber = parsePhoneNumber(resArr[0], 'CN')
   const phone = parsedNumber?.formatNational().replace(/[()\s-]/g, '')
   const countrycode = parsedNumber?.countryCallingCode
@@ -131,14 +131,13 @@ const getUserLevelInfo = async (api) => {
  * @description: 打卡签到
  */
 const checkIn = async (api) => {
-  console.log('checkin in')
   const url = `${api}/daily_signin`
   let res
   res = await axios({
     method: 'POST',
     url,
   })
-  console.log('Web/PC checkin fininshed')
+  console.log('Android端签到完成')
   res = await axios({
     method: 'POST',
     url,
@@ -146,7 +145,7 @@ const checkIn = async (api) => {
       type: 1,
     },
   })
-  console.log('Android check finished')
+  console.log('Web/PC端签到完成')
   return res.data ?? res
 }
 
@@ -193,11 +192,12 @@ const playDailyLists = async (api) => {
         params: {
           id: song.id,
           sourceid: item.id,
-          time: 500,
+          time: 1000,
         },
       })
     })
   })
+  console.log('每日推荐歌单完成')
   return res
 }
 
@@ -231,6 +231,7 @@ const playDailySongs = async (api) => {
       },
     })
   })
+  console.log('每日推荐歌曲完成')
   return res
 }
 
@@ -244,24 +245,11 @@ const checkInYunbei = async (api) => {
     method: 'POST',
     url,
   })
+  console.log('云贝签到完成')
   return res
 }
 
-const dailyTask = async () => {
-  let res = []
-  try {
-    const api = await getLocalApi()
-    res.push(await playDailySongs(api))
-    res.push(await playDailyLists(api))
-    res.push(await checkIn(api))
-    res.push(await checkInYunbei(api))
-  } catch (error) {
-    res.push(error?.response?.data)
-  }
-  return res
-}
-
-export const main = async (event, context) => {
+export const main = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false
   let res = []
   try {
@@ -273,5 +261,5 @@ export const main = async (event, context) => {
   } catch (error) {
     res.push(error?.response?.data)
   }
-  return res
+  callback(null, res)
 }
