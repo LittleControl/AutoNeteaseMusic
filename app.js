@@ -17,7 +17,6 @@ const getLocalApi = async (dir) => {
   } catch (error) {
     api = 'https://api.littlecontrol.me'
   }
-  console.log(api)
   return api
 }
 
@@ -308,5 +307,3 @@ export const main = async (event, context, callback) => {
   }
   callback(null, res)
 }
-
-main({}, {}, ({}, res) => console.log(res))

@@ -43,8 +43,6 @@ var _fs = require("fs");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _objectDestructuringEmpty(obj) { if (obj == null) throw new TypeError("Cannot destructure undefined"); }
-
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
@@ -81,10 +79,9 @@ var getLocalApi = /*#__PURE__*/function () {
             api = 'https://api.littlecontrol.me';
 
           case 10:
-            console.log(api);
             return _context.abrupt("return", api);
 
-          case 12:
+          case 11:
           case "end":
             return _context.stop();
         }
@@ -910,8 +907,3 @@ var main = /*#__PURE__*/function () {
 }();
 
 exports.main = main;
-main({}, {}, function (_ref19, res) {
-  _objectDestructuringEmpty(_ref19);
-
-  return console.log(res);
-});
