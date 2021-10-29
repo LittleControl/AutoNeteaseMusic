@@ -906,6 +906,3 @@ var main = /*#__PURE__*/function () {
 }();
 
 exports.main = main;
-main({}, {}, function (error, res) {
-  console.log(res);
-});
