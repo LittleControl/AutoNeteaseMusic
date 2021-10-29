@@ -4,7 +4,7 @@ import parsePhoneNumber from 'libphonenumber-js'
 import { promises } from 'fs'
 import { data } from 'core-js/internals/is-forced'
 import { info } from 'console'
-const { readFile, writeFile } = promises
+const { readFile } = promises
 
 const CONFIG_DIR = path.join(__dirname, 'config')
 const INFO = {
@@ -23,15 +23,15 @@ const getLocalApi = async (dir) => {
     const content = await readFile(`${dir}/api`, 'utf-8')
     api = content.split('\n')[0]
   } catch (error) {
+    console.log('读取本地API配置失败,使用默认的API配置')
     api = 'https://api.littlecontrol.me'
   }
   return api
 }
 
 /**
- * @description: 通过手机号登陆,以获取Cookie
+ * @description: 通过手机号登陆,获取Cookie
  */
-// const loginByPhone = async (dir, info) => {
 const getCookie = async (dir, info) => {
   if (!info.api) {
     info.api = await getLocalApi(dir)
@@ -53,39 +53,15 @@ const getCookie = async (dir, info) => {
         countrycode: info.countrycode,
       },
     })
+    console.log('登陆成功')
     return data?.cookie
   } catch (error) {
+    console.log('获取Cookie失败')
     console.log(error?.response?.data)
-    console.log('get cookie error')
-    console.log(`error: ${error?.response?.data}`)
+    return null
   }
 }
 
-/**
- * @description: 获取用户登陆状态
- */
-const getLoginStatus = async (dir, info) => {
-  if (!info.api) {
-    info.api = await getLocalApi(dir)
-  }
-  const url = `${info.api}/login/status`
-  try {
-    const res = await axios({
-      method: 'POST',
-      url,
-      data: {
-        cookie: info.cookie,
-      },
-    })
-    if (data.account && data.profile) {
-      return true
-    }
-    return false
-  } catch (error) {
-    console.log(`error: ${error?.response?.data}`)
-    return false
-  }
-}
 /**
  * @description: 从文件读取账户信息
  */
@@ -106,20 +82,6 @@ const getAccountInfo = async (dir) => {
     return {}
   }
 }
-
-// /**
-//  * @description: 获取Cookie
-//  */
-
-// const getCookie = async (dir, info) => {
-//   try {
-//     const COOKIE = await loginByPhone(dir, info)
-//     info.cookie = COOKIE
-//   } catch (error) {
-//     console.log(error?.response?.data)
-//     console.log('cookie读取失败')
-//   }
-// }
 
 /**
  * @description: 拦截请求,添加cookie等信息
@@ -155,19 +117,21 @@ axios.interceptors.request.use(
  */
 const checkIn = async (api) => {
   const url = `${api}/daily_signin`
-  let res
+  let res = []
   try {
-    res = await axios({
+    await axios({
       method: 'POST',
       url,
     })
     console.log('Android端签到完成')
+    res.push('Android端签到完成')
   } catch (error) {
-    console.log(`Android端签到失败, error: ${error?.response?.data}`)
-    res = error?.response?.data
+    console.log(`Android端签到失败`)
+    console.log(error?.response?.data)
+    res.push('Android端签到失败')
   }
   try {
-    res = await axios({
+    await axios({
       method: 'POST',
       url,
       params: {
@@ -175,9 +139,11 @@ const checkIn = async (api) => {
       },
     })
     console.log('Web/PC端签到完成')
+    res.push('Web/PC端签到完成')
   } catch (error) {
-    console.log(`Web/PC端签到失败, error: ${error?.response?.data}`)
-    res = error?.response?.data
+    console.log(`Web/PC端签到失败`)
+    console.log(error?.response?.data)
+    res.push('Web/PC端签到失败')
   }
   return res
 }
@@ -194,7 +160,8 @@ const getDailyPlaylist = async (api) => {
     })
     return data
   } catch (error) {
-    console.log(`获取每日推荐歌单失败, error: ${error?.response?.data}`)
+    console.log(`获取每日推荐歌单失败`)
+    console.log(error?.response?.data)
     return {}
   }
 }
@@ -214,7 +181,8 @@ const getPlaylistContent = async (id, api) => {
     })
     return data
   } catch (error) {
-    console.log(`获取歌单详情失败, error: ${error?.response?.data}`)
+    console.log(`获取歌单详情失败`)
+    console.log(error?.response?.data)
     return {}
   }
 }
@@ -225,7 +193,7 @@ const getPlaylistContent = async (id, api) => {
 const playDailyLists = async (api) => {
   const url = `${api}/scrobble`
   const { recommend } = await getDailyPlaylist(api)
-  if (!recommend) return
+  if (!recommend) return '每日推荐歌单刷取失败'
   try {
     recommend.forEach(async (item) => {
       const { privileges } = await getPlaylistContent(item.id, api)
@@ -244,7 +212,8 @@ const playDailyLists = async (api) => {
     console.log('每日推荐歌单刷取完成')
     return '每日推荐歌单刷取完成'
   } catch (error) {
-    console.log(`每日推荐歌单刷取失败,error: ${error?.response?.data}`)
+    console.log(`每日推荐歌单刷取失败`)
+    console.log(error?.response?.data)
     return '每日推荐歌单刷取失败'
   }
 }
@@ -261,7 +230,8 @@ const getDailySongs = async (api) => {
     })
     return data.data
   } catch (error) {
-    console.log(`获取每日推荐歌曲失败, error: ${error?.response?.data}`)
+    console.log(`获取每日推荐歌曲失败`)
+    console.log(error?.response?.data)
     return {}
   }
 }
@@ -272,7 +242,7 @@ const getDailySongs = async (api) => {
 const playDailySongs = async (api) => {
   const url = `${api}/scrobble`
   const { dailySongs } = await getDailySongs(api)
-  if (!dailySongs) return
+  if (!dailySongs) return '每日推荐歌曲刷取失败'
   try {
     dailySongs.forEach(async (song) => {
       await axios({
@@ -307,7 +277,8 @@ const checkInYunbei = async (api) => {
     console.log('云贝签到完成')
     return '云贝签到完成'
   } catch (error) {
-    console.log(`云贝签到失败, error: ${error?.response?.data}`)
+    console.log(`云贝签到失败`)
+    console.log(error?.response?.data)
     return '云贝签到失败'
   }
 }
@@ -327,3 +298,5 @@ export const main = async (event, context, callback) => {
   }
   callback(null, res)
 }
+
+main({}, {}, (error, res) => console.log(res))
