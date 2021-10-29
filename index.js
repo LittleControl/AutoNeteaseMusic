@@ -835,6 +835,3 @@ var main = /*#__PURE__*/function () {
 }();
 
 exports.main = main;
-main({}, {}, function (error, res) {
-  return console.log(res);
-});

@@ -298,5 +298,3 @@ export const main = async (event, context, callback) => {
   }
   callback(null, res)
 }
-
-main({}, {}, (error, res) => console.log(res))
