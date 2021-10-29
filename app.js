@@ -2,9 +2,17 @@ import axios from 'axios'
 import path from 'path'
 import parsePhoneNumber from 'libphonenumber-js'
 import { promises } from 'fs'
+import { data } from 'core-js/internals/is-forced'
+import { info } from 'console'
 const { readFile, writeFile } = promises
 
 const CONFIG_DIR = path.join(__dirname, 'config')
+const INFO = {
+  api: undefined,
+  phone: undefined,
+  password: undefined,
+  cookie: undefined,
+}
 
 /**
  * @description: 获取api
@@ -21,33 +29,63 @@ const getLocalApi = async (dir) => {
 }
 
 /**
- * @description: 拦截请求,添加cookie等信息
+ * @description: 通过手机号登陆,以获取Cookie
  */
-axios.interceptors.request.use(
-  async (config) => {
-    config.withCredentials = true
-
-    //防止网易对IP的限制
-    config.headers['X-Real-IP'] = '123.138.78.143'
-    const { method, url } = config
-    config.params ??= {}
-    if (method?.toUpperCase() === 'POST') {
-      config.params.timestamp = Date.now()
-      config.params.realIP = '123.138.78.143'
-    }
-    if (url?.includes('/login')) {
-      return config
-    }
-    const COOKIE = await getCookie(CONFIG_DIR)
-    config.data ??= {}
-    config.data.cookie = COOKIE
-    return config
-  },
-  async (error) => {
-    return Promise.reject(error)
+// const loginByPhone = async (dir, info) => {
+const getCookie = async (dir, info) => {
+  if (!info.api) {
+    info.api = await getLocalApi(dir)
   }
-)
+  const url = `${info.api}/login/cellphone`
+  try {
+    if (!info.phone && !info.password && !info.countrycode) {
+      const { password, phone, countrycode } = await getAccountInfo(dir)
+      info.password = password
+      info.phone = phone
+      info.countrycode = countrycode
+    }
+    const { data } = await axios({
+      method: 'POST',
+      url,
+      data: {
+        phone: info.phone,
+        password: info.password,
+        countrycode: info.countrycode,
+      },
+    })
+    return data?.cookie
+  } catch (error) {
+    console.log(error?.response?.data)
+    console.log('get cookie error')
+    console.log(`error: ${error?.response?.data}`)
+  }
+}
 
+/**
+ * @description: 获取用户登陆状态
+ */
+const getLoginStatus = async (dir, info) => {
+  if (!info.api) {
+    info.api = await getLocalApi(dir)
+  }
+  const url = `${info.api}/login/status`
+  try {
+    const res = await axios({
+      method: 'POST',
+      url,
+      data: {
+        cookie: info.cookie,
+      },
+    })
+    if (data.account && data.profile) {
+      return true
+    }
+    return false
+  } catch (error) {
+    console.log(`error: ${error?.response?.data}`)
+    return false
+  }
+}
 /**
  * @description: 从文件读取账户信息
  */
@@ -69,68 +107,48 @@ const getAccountInfo = async (dir) => {
   }
 }
 
-/**
- * @description: 通过手机号登陆,以获取Cookie
- */
-const loginByPhone = async (dir) => {
-  const api = await getLocalApi(dir)
-  const url = `${api}/login/cellphone`
-  const accountInfo = await getAccountInfo(dir)
-  if (!accountInfo) return null
-  try {
-    const { data } = await axios({
-      method: 'POST',
-      url,
-      data: accountInfo,
-    })
-    return data?.cookie ?? ''
-  } catch (error) {
-    console.log(`error: ${error?.response?.data}`)
-    return ''
-  }
-}
+// /**
+//  * @description: 获取Cookie
+//  */
+
+// const getCookie = async (dir, info) => {
+//   try {
+//     const COOKIE = await loginByPhone(dir, info)
+//     info.cookie = COOKIE
+//   } catch (error) {
+//     console.log(error?.response?.data)
+//     console.log('cookie读取失败')
+//   }
+// }
 
 /**
- * @description: 获取Cookie
+ * @description: 拦截请求,添加cookie等信息
  */
-
-const getCookie = async (dir) => {
-  try {
-    const localCookie = await readFile(`${dir}/cookie`, 'utf8')
-    const { data } = await getLoginStatus(dir, localCookie)
-    if (data.account && data.profile) {
-      return localCookie
-    } else {
-      const COOKIE = await loginByPhone(dir)
-      await writeFile(`${dir}/cookie`, COOKIE)
-      return COOKIE
+axios.interceptors.request.use(
+  async (config) => {
+    config.withCredentials = true
+    //防止网易对IP的限制
+    config.headers['X-Real-IP'] = '123.138.78.143'
+    const { method, url } = config
+    config.params ??= {}
+    if (method?.toUpperCase() === 'POST') {
+      config.params.timestamp = Date.now()
+      config.params.realIP = '123.138.78.143'
     }
-  } catch (error) {
-    console.log('cookie读取失败')
-    return ''
+    config.data ??= {}
+    if (url?.includes('login')) {
+      return config
+    }
+    if (!INFO.cookie) {
+      INFO.cookie = await getCookie(CONFIG_DIR, INFO)
+    }
+    config.data.cookie = INFO.cookie
+    return config
+  },
+  async (error) => {
+    return Promise.reject(error)
   }
-}
-
-/**
- * @description: 获取用户登陆状态
- */
-const getLoginStatus = async (dir, cookie) => {
-  const api = await getLocalApi(dir)
-  const url = `${api}/login/status`
-  try {
-    const res = await axios({
-      method: 'POST',
-      url,
-      data: {
-        cookie,
-      },
-    })
-    return res.data
-  } catch (error) {
-    console.log(`error: ${error?.response?.data}`)
-    return {}
-  }
-}
+)
 
 /**
  * @description: 打卡签到
@@ -244,6 +262,7 @@ const getDailySongs = async (api) => {
     return data.data
   } catch (error) {
     console.log(`获取每日推荐歌曲失败, error: ${error?.response?.data}`)
+    return {}
   }
 }
 
@@ -297,11 +316,12 @@ export const main = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false
   let res = []
   try {
-    const api = await getLocalApi()
-    res.push(await playDailySongs(api))
-    res.push(await playDailyLists(api))
-    res.push(await checkIn(api))
-    res.push(await checkInYunbei(api))
+    const API = await getLocalApi(CONFIG_DIR)
+    info.api = API
+    res.push(await playDailySongs(API))
+    res.push(await playDailyLists(API))
+    res.push(await checkIn(API))
+    res.push(await checkInYunbei(API))
   } catch (error) {
     res.push(error)
   }
