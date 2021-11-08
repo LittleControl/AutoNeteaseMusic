@@ -372,9 +372,11 @@ var checkIn = /*#__PURE__*/function () {
             res.push('Web/PC端签到失败');
 
           case 26:
+            console.log('两个平台前端都会要云贝奖励,Android端默认也会进行云贝签到');
+            console.log('请登陆网易云查看云贝奖励是否正常');
             return _context6.abrupt("return", res);
 
-          case 27:
+          case 29:
           case "end":
             return _context6.stop();
         }
@@ -801,32 +803,23 @@ var main = /*#__PURE__*/function () {
 
             _context16.t4.push.call(_context16.t4, _context16.t5);
 
-            _context16.t6 = res;
-            _context16.next = 25;
-            return checkInYunbei(API);
-
-          case 25:
-            _context16.t7 = _context16.sent;
-
-            _context16.t6.push.call(_context16.t6, _context16.t7);
-
-            _context16.next = 32;
+            _context16.next = 27;
             break;
 
-          case 29:
-            _context16.prev = 29;
-            _context16.t8 = _context16["catch"](2);
-            res.push(_context16.t8);
+          case 24:
+            _context16.prev = 24;
+            _context16.t6 = _context16["catch"](2);
+            res.push(_context16.t6);
 
-          case 32:
+          case 27:
             callback(null, res);
 
-          case 33:
+          case 28:
           case "end":
             return _context16.stop();
         }
       }
-    }, _callee16, null, [[2, 29]]);
+    }, _callee16, null, [[2, 24]]);
   }));
 
   return function main(_x18, _x19, _x20) {

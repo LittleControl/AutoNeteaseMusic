@@ -145,6 +145,8 @@ const checkIn = async (api) => {
     console.log(error?.response?.data)
     res.push('Web/PC端签到失败')
   }
+  console.log('两个平台前端都会要云贝奖励,Android端默认也会进行云贝签到')
+  console.log('请登陆网易云查看云贝奖励是否正常')
   return res
 }
 
@@ -292,7 +294,7 @@ export const main = async (event, context, callback) => {
     res.push(await playDailySongs(API))
     res.push(await playDailyLists(API))
     res.push(await checkIn(API))
-    res.push(await checkInYunbei(API))
+    // res.push(await checkInYunbei(API))
   } catch (error) {
     res.push(error)
   }
