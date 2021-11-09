@@ -13,9 +13,9 @@ require("core-js/modules/es.array.join.js");
 
 require("core-js/modules/es.regexp.exec.js");
 
-require("core-js/modules/es.string.split.js");
-
 require("core-js/modules/es.string.replace.js");
+
+require("core-js/modules/es.string.split.js");
 
 require("core-js/modules/es.date.now.js");
 
@@ -40,10 +40,6 @@ var _path = _interopRequireDefault(require("path"));
 var _libphonenumberJs = _interopRequireDefault(require("libphonenumber-js"));
 
 var _fs = require("fs");
-
-var _isForced = require("core-js/internals/is-forced");
-
-var _console = require("console");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -78,7 +74,7 @@ var getLocalApi = /*#__PURE__*/function () {
 
           case 3:
             content = _context.sent;
-            api = content.split('\n')[0];
+            api = content.replace(/[\s]/g, '');
             _context.next = 11;
             break;
 
@@ -103,14 +99,15 @@ var getLocalApi = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
+
+getLocalApi(CONFIG_DIR);
 /**
  * @description: 通过手机号登陆,获取Cookie
  */
 
-
 var getCookie = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(dir, info) {
-    var url, _yield$getAccountInfo, password, phone, countrycode, _yield$axios, _data, _error$response;
+    var url, _yield$getAccountInfo, password, phone, countrycode, _yield$axios, data, _error$response;
 
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
@@ -162,9 +159,9 @@ var getCookie = /*#__PURE__*/function () {
 
           case 18:
             _yield$axios = _context2.sent;
-            _data = _yield$axios.data;
+            data = _yield$axios.data;
             console.log('登陆成功');
-            return _context2.abrupt("return", _data === null || _data === void 0 ? void 0 : _data.cookie);
+            return _context2.abrupt("return", data === null || data === void 0 ? void 0 : data.cookie);
 
           case 24:
             _context2.prev = 24;
@@ -203,7 +200,7 @@ var getAccountInfo = /*#__PURE__*/function () {
 
           case 3:
             res = _context3.sent;
-            resArr = res.split('\n');
+            resArr = res.replace(/[\t\r ]/g, '').split('\n');
             parsedNumber = (0, _libphonenumberJs["default"])(resArr[0], 'CN');
             phone = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.formatNational().replace(/[()\s-]/g, '');
             countrycode = parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.countryCallingCode;
@@ -231,10 +228,11 @@ var getAccountInfo = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
+
+getAccountInfo(CONFIG_DIR);
 /**
  * @description: 拦截请求,添加cookie等信息
  */
-
 
 _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(config) {
@@ -395,7 +393,7 @@ var checkIn = /*#__PURE__*/function () {
 
 var getDailyPlaylist = /*#__PURE__*/function () {
   var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(api) {
-    var url, _yield$axios2, _data2, _error$response4;
+    var url, _yield$axios2, data, _error$response4;
 
     return regeneratorRuntime.wrap(function _callee7$(_context7) {
       while (1) {
@@ -411,8 +409,8 @@ var getDailyPlaylist = /*#__PURE__*/function () {
 
           case 4:
             _yield$axios2 = _context7.sent;
-            _data2 = _yield$axios2.data;
-            return _context7.abrupt("return", _data2);
+            data = _yield$axios2.data;
+            return _context7.abrupt("return", data);
 
           case 9:
             _context7.prev = 9;
@@ -440,7 +438,7 @@ var getDailyPlaylist = /*#__PURE__*/function () {
 
 var getPlaylistContent = /*#__PURE__*/function () {
   var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(id, api) {
-    var url, _yield$axios3, _data3, _error$response5;
+    var url, _yield$axios3, data, _error$response5;
 
     return regeneratorRuntime.wrap(function _callee8$(_context8) {
       while (1) {
@@ -459,8 +457,8 @@ var getPlaylistContent = /*#__PURE__*/function () {
 
           case 4:
             _yield$axios3 = _context8.sent;
-            _data3 = _yield$axios3.data;
-            return _context8.abrupt("return", _data3);
+            data = _yield$axios3.data;
+            return _context8.abrupt("return", data);
 
           case 9:
             _context8.prev = 9;
@@ -596,7 +594,7 @@ var playDailyLists = /*#__PURE__*/function () {
 
 var getDailySongs = /*#__PURE__*/function () {
   var _ref12 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(api) {
-    var url, _yield$axios4, _data4, _error$response7;
+    var url, _yield$axios4, data, _error$response7;
 
     return regeneratorRuntime.wrap(function _callee12$(_context12) {
       while (1) {
@@ -612,8 +610,8 @@ var getDailySongs = /*#__PURE__*/function () {
 
           case 4:
             _yield$axios4 = _context12.sent;
-            _data4 = _yield$axios4.data;
-            return _context12.abrupt("return", _data4.data);
+            data = _yield$axios4.data;
+            return _context12.abrupt("return", data.data);
 
           case 9:
             _context12.prev = 9;
@@ -714,116 +712,71 @@ var playDailySongs = /*#__PURE__*/function () {
     return _ref13.apply(this, arguments);
   };
 }();
-/**
- * @description: 云贝签到
- */
 
-
-var checkInYunbei = /*#__PURE__*/function () {
-  var _ref15 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee15(api) {
-    var url, res, _error$response9;
-
+var main = /*#__PURE__*/function () {
+  var _ref15 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee15(event, context, callback) {
+    var res, API;
     return regeneratorRuntime.wrap(function _callee15$(_context15) {
       while (1) {
         switch (_context15.prev = _context15.next) {
           case 0:
-            url = "".concat(api, "/yunbei/sign");
-            _context15.prev = 1;
-            _context15.next = 4;
-            return (0, _axios["default"])({
-              method: 'POST',
-              url: url
-            });
-
-          case 4:
-            res = _context15.sent;
-            console.log('云贝签到完成');
-            return _context15.abrupt("return", '云贝签到完成');
-
-          case 9:
-            _context15.prev = 9;
-            _context15.t0 = _context15["catch"](1);
-            console.log("\u4E91\u8D1D\u7B7E\u5230\u5931\u8D25");
-            console.log(_context15.t0 === null || _context15.t0 === void 0 ? void 0 : (_error$response9 = _context15.t0.response) === null || _error$response9 === void 0 ? void 0 : _error$response9.data);
-            return _context15.abrupt("return", '云贝签到失败');
-
-          case 14:
-          case "end":
-            return _context15.stop();
-        }
-      }
-    }, _callee15, null, [[1, 9]]);
-  }));
-
-  return function checkInYunbei(_x17) {
-    return _ref15.apply(this, arguments);
-  };
-}();
-
-var main = /*#__PURE__*/function () {
-  var _ref16 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee16(event, context, callback) {
-    var res, API;
-    return regeneratorRuntime.wrap(function _callee16$(_context16) {
-      while (1) {
-        switch (_context16.prev = _context16.next) {
-          case 0:
             context.callbackWaitsForEmptyEventLoop = false;
             res = [];
-            _context16.prev = 2;
-            _context16.next = 5;
+            _context15.prev = 2;
+            _context15.next = 5;
             return getLocalApi(CONFIG_DIR);
 
           case 5:
-            API = _context16.sent;
-            _console.info.api = API;
-            _context16.t0 = res;
-            _context16.next = 10;
+            API = _context15.sent;
+            INFO.api = API;
+            _context15.t0 = res;
+            _context15.next = 10;
             return playDailySongs(API);
 
           case 10:
-            _context16.t1 = _context16.sent;
+            _context15.t1 = _context15.sent;
 
-            _context16.t0.push.call(_context16.t0, _context16.t1);
+            _context15.t0.push.call(_context15.t0, _context15.t1);
 
-            _context16.t2 = res;
-            _context16.next = 15;
+            _context15.t2 = res;
+            _context15.next = 15;
             return playDailyLists(API);
 
           case 15:
-            _context16.t3 = _context16.sent;
+            _context15.t3 = _context15.sent;
 
-            _context16.t2.push.call(_context16.t2, _context16.t3);
+            _context15.t2.push.call(_context15.t2, _context15.t3);
 
-            _context16.t4 = res;
-            _context16.next = 20;
+            _context15.t4 = res;
+            _context15.next = 20;
             return checkIn(API);
 
           case 20:
-            _context16.t5 = _context16.sent;
+            _context15.t5 = _context15.sent;
 
-            _context16.t4.push.call(_context16.t4, _context16.t5);
+            _context15.t4.push.call(_context15.t4, _context15.t5);
 
-            _context16.next = 27;
+            _context15.next = 27;
             break;
 
           case 24:
-            _context16.prev = 24;
-            _context16.t6 = _context16["catch"](2);
-            res.push(_context16.t6);
+            _context15.prev = 24;
+            _context15.t6 = _context15["catch"](2);
+            res.push(_context15.t6);
 
           case 27:
             callback(null, res);
 
           case 28:
           case "end":
-            return _context16.stop();
+            return _context15.stop();
         }
       }
-    }, _callee16, null, [[2, 24]]);
+    }, _callee15, null, [[2, 24]]);
   }));
 
-  return function main(_x18, _x19, _x20) {
-    return _ref16.apply(this, arguments);
+  return function main(_x17, _x18, _x19) {
+    return _ref15.apply(this, arguments);
   };
 }();
 

@@ -2,8 +2,6 @@ import axios from 'axios'
 import path from 'path'
 import parsePhoneNumber from 'libphonenumber-js'
 import { promises } from 'fs'
-import { data } from 'core-js/internals/is-forced'
-import { info } from 'console'
 const { readFile } = promises
 
 const CONFIG_DIR = path.join(__dirname, 'config')
@@ -21,13 +19,14 @@ const getLocalApi = async (dir) => {
   let api
   try {
     const content = await readFile(`${dir}/api`, 'utf-8')
-    api = content.split('\n')[0]
+    api = content.replace(/[\s]/g, '')
   } catch (error) {
     console.log('读取本地API配置失败,使用默认的API配置')
     api = 'https://api.littlecontrol.me'
   }
   return api
 }
+getLocalApi(CONFIG_DIR)
 
 /**
  * @description: 通过手机号登陆,获取Cookie
@@ -68,7 +67,7 @@ const getCookie = async (dir, info) => {
 const getAccountInfo = async (dir) => {
   try {
     const res = await readFile(`${dir}/account`, 'utf-8')
-    const resArr = res.split('\n')
+    const resArr = res.replace(/[\t\r ]/g, '').split('\n')
     const parsedNumber = parsePhoneNumber(resArr[0], 'CN')
     const phone = parsedNumber?.formatNational().replace(/[()\s-]/g, '')
     const countrycode = parsedNumber?.countryCallingCode
@@ -82,6 +81,7 @@ const getAccountInfo = async (dir) => {
     return {}
   }
 }
+getAccountInfo(CONFIG_DIR)
 
 /**
  * @description: 拦截请求,添加cookie等信息
@@ -265,36 +265,15 @@ const playDailySongs = async (api) => {
   }
 }
 
-/**
- * @description: 云贝签到
- */
-const checkInYunbei = async (api) => {
-  const url = `${api}/yunbei/sign`
-  let res
-  try {
-    res = await axios({
-      method: 'POST',
-      url,
-    })
-    console.log('云贝签到完成')
-    return '云贝签到完成'
-  } catch (error) {
-    console.log(`云贝签到失败`)
-    console.log(error?.response?.data)
-    return '云贝签到失败'
-  }
-}
-
 export const main = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false
   let res = []
   try {
     const API = await getLocalApi(CONFIG_DIR)
-    info.api = API
+    INFO.api = API
     res.push(await playDailySongs(API))
     res.push(await playDailyLists(API))
     res.push(await checkIn(API))
-    // res.push(await checkInYunbei(API))
   } catch (error) {
     res.push(error)
   }
