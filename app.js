@@ -7,9 +7,8 @@ const { readFile } = promises
 const CONFIG_DIR = path.join(__dirname, 'config')
 const INFO = {
   api: undefined,
-  phone: undefined,
-  password: undefined,
-  cookie: undefined,
+  cookies: [],
+  accounts: [],
 }
 
 /**
@@ -26,38 +25,38 @@ const getLocalApi = async (dir) => {
   }
   return api
 }
-getLocalApi(CONFIG_DIR)
 
 /**
  * @description: 通过手机号登陆,获取Cookie
  */
-const getCookie = async (dir, info) => {
+const getCookies = async (dir, info) => {
   if (!info.api) {
     info.api = await getLocalApi(dir)
   }
   const url = `${info.api}/login/cellphone`
   try {
-    if (!info.phone && !info.password && !info.countrycode) {
-      const { password, phone, countrycode } = await getAccountInfo(dir)
-      info.password = password
-      info.phone = phone
-      info.countrycode = countrycode
-    }
-    const { data } = await axios({
-      method: 'POST',
-      url,
-      data: {
-        phone: info.phone,
-        password: info.password,
-        countrycode: info.countrycode,
-      },
-    })
-    console.log('登陆成功')
-    return data?.cookie
+    const accounts = await getAccountInfo(dir)
+    info.accounts = accounts
+    const cookies = await Promise.all(
+      accounts.map(async (current) => {
+        const { data } = await axios({
+          method: 'POST',
+          url,
+          data: {
+            phone: current.phone,
+            password: current.password,
+            countrycode: current.countrycode,
+          },
+        })
+        console.log(current.phone.slice(-4) + '登陆成功')
+        return data?.cookie
+      })
+    )
+    return cookies
   } catch (error) {
     console.log('获取Cookie失败')
     console.log(error?.response?.data)
-    return null
+    return []
   }
 }
 
@@ -65,23 +64,27 @@ const getCookie = async (dir, info) => {
  * @description: 从文件读取账户信息
  */
 const getAccountInfo = async (dir) => {
+  const res = []
   try {
-    const res = await readFile(`${dir}/account`, 'utf-8')
-    const resArr = res.replace(/[\t\r ]/g, '').split('\n')
-    const parsedNumber = parsePhoneNumber(resArr[0], 'CN')
-    const phone = parsedNumber?.formatNational().replace(/[()\s-]/g, '')
-    const countrycode = parsedNumber?.countryCallingCode
-    return {
-      phone,
-      countrycode,
-      password: resArr[1],
-    }
+    const fileContent = await readFile(`${dir}/account`, 'utf-8')
+    const contentArr = fileContent.replace(/[\t\r ]/g, '').split('\n')
+    contentArr.forEach((current, index, array) => {
+      if (index % 2 === 0) {
+        if (current === '') return
+        const parsedNumber = parsePhoneNumber(current, 'CN')
+        res.push({
+          phone: parsedNumber?.formatNational().replace(/[()\s-]/g, ''),
+          countrycode: parsedNumber?.countryCallingCode,
+          password: array[index + 1],
+        })
+      }
+    })
+    return res
   } catch (error) {
     console.log('读取用户账户密码失败')
-    return {}
+    return []
   }
 }
-getAccountInfo(CONFIG_DIR)
 
 /**
  * @description: 拦截请求,添加cookie等信息
@@ -101,10 +104,7 @@ axios.interceptors.request.use(
     if (url?.includes('login')) {
       return config
     }
-    if (!INFO.cookie) {
-      INFO.cookie = await getCookie(CONFIG_DIR, INFO)
-    }
-    config.data.cookie = INFO.cookie
+    config.data.cookie = INFO.cookies[0]
     return config
   },
   async (error) => {
@@ -267,15 +267,21 @@ const playDailySongs = async (api) => {
 
 export const main = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false
-  let res = []
+  let res = {}
   try {
-    const API = await getLocalApi(CONFIG_DIR)
-    INFO.api = API
-    res.push(await playDailySongs(API))
-    res.push(await playDailyLists(API))
-    res.push(await checkIn(API))
+    INFO.api = await getLocalApi(CONFIG_DIR)
+    INFO.cookies = await getCookies(CONFIG_DIR, INFO)
+    while (INFO.cookies.length) {
+      const { phone } = INFO.accounts.shift()
+      res[phone] = []
+      console.log('开始处理' + phone)
+      res[phone].push(await playDailySongs(INFO.api))
+      res[phone].push(await playDailyLists(INFO.api))
+      res[phone].push(await checkIn(INFO.api))
+      INFO.cookies.shift()
+    }
   } catch (error) {
-    res.push(error)
+    res[error] = error
   }
   callback(null, res)
 }
