@@ -5,6 +5,7 @@
 ## 关于
 
 - 本项目后端基于[NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
+- 由于Vercel免费额度问题,先已不再提供搭建好的后端API,还请自行搭建,搭建步骤还请参考[NeteaseCloudMusicApi在 vercel 上的部署](https://neteasecloudmusicapi.vercel.app/#/?id=vercel-%e9%83%a8%e7%bd%b2),当然也不必非局限于Vercel这个平台
 - 经过我一周工作的摸鱼时间,写出了这个项目,代码写的确实烂,还请见谅
 - 因为没有`Node.js`的较为大型项目开发经验,所以好多代码确实辣眼睛,还请不吝赐教
 
