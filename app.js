@@ -93,12 +93,13 @@ axios.interceptors.request.use(
   async (config) => {
     config.withCredentials = true
     //防止网易对IP的限制
-    config.headers['X-Real-IP'] = '123.138.78.143'
+    config.headers['X-Real-IP'] = '123.139.248.164'
     const { method, url } = config
     config.params ??= {}
+    // config.params.proxy='http://127.0.0.1:7890'
     if (method?.toUpperCase() === 'POST') {
       config.params.timestamp = Date.now()
-      config.params.realIP = '123.138.78.143'
+      config.params.realIP = '123.139.248.164'
     }
     config.data ??= {}
     if (url?.includes('login')) {
@@ -285,3 +286,4 @@ export const main = async (event, context, callback) => {
   }
   callback(null, res)
 }
+// main({}, {}, () => {})
