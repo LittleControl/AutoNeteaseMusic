@@ -69,13 +69,14 @@ const getAccountInfo = async (dir) => {
     const fileContent = await readFile(`${dir}/account`, 'utf-8')
     const contentArr = fileContent.replace(/[\t\r ]/g, '').split('\n')
     contentArr.forEach((current, index, array) => {
-      if (index % 2 === 0) {
+      if (index % 3 === 0) {
         if (current === '') return
         const parsedNumber = parsePhoneNumber(current, 'CN')
         res.push({
           phone: parsedNumber?.formatNational().replace(/[()\s-]/g, ''),
           countrycode: parsedNumber?.countryCallingCode,
           password: array[index + 1],
+          IsPlayNeed: array[index + 2]
         })
       }
     })
@@ -93,13 +94,13 @@ axios.interceptors.request.use(
   async (config) => {
     config.withCredentials = true
     //防止网易对IP的限制
-    config.headers['X-Real-IP'] = '123.139.248.164'
+    config.headers['X-Real-IP'] = '222.216.20.50'
     const { method, url } = config
     config.params ??= {}
     // config.params.proxy='http://127.0.0.1:7890'
     if (method?.toUpperCase() === 'POST') {
       config.params.timestamp = Date.now()
-      config.params.realIP = '123.139.248.164'
+      config.params.realIP = '222.216.20.50'
     }
     config.data ??= {}
     if (url?.includes('login')) {
@@ -266,18 +267,22 @@ const playDailySongs = async (api) => {
   }
 }
 
-export const main = async (event, context, callback) => {
+const main = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false
   let res = {}
   try {
     INFO.api = await getLocalApi(CONFIG_DIR)
     INFO.cookies = await getCookies(CONFIG_DIR, INFO)
     while (INFO.cookies.length) {
-      const { phone } = INFO.accounts.shift()
+      const { phone, IsPlayNeed } = INFO.accounts.shift()
+      let isPlayNeed = IsPlayNeed == "true"
       res[phone] = []
       console.log('开始处理' + phone)
-      res[phone].push(await playDailySongs(INFO.api))
-      res[phone].push(await playDailyLists(INFO.api))
+      if (isPlayNeed)
+      {
+        res[phone].push(await playDailySongs(INFO.api))
+        res[phone].push(await playDailyLists(INFO.api))
+      }
       res[phone].push(await checkIn(INFO.api))
       INFO.cookies.shift()
     }
@@ -286,4 +291,4 @@ export const main = async (event, context, callback) => {
   }
   callback(null, res)
 }
-// main({}, {}, () => {})
+// main({}, {}, (a,b) => {console.log(a+b)})

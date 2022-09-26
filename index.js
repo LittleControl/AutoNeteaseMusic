@@ -28,11 +28,6 @@ require("core-js/modules/es.object.set-prototype-of.js");
 
 require("core-js/modules/es.array.reverse.js");
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.main = void 0;
-
 require("core-js/modules/es.array.join.js");
 
 require("core-js/modules/es.regexp.exec.js");
@@ -250,13 +245,14 @@ var getAccountInfo = /*#__PURE__*/function () {
             fileContent = _context4.sent;
             contentArr = fileContent.replace(/[\t\r ]/g, '').split('\n');
             contentArr.forEach(function (current, index, array) {
-              if (index % 2 === 0) {
+              if (index % 3 === 0) {
                 if (current === '') return;
                 var parsedNumber = (0, _libphonenumberJs["default"])(current, 'CN');
                 res.push({
                   phone: parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.formatNational().replace(/[()\s-]/g, ''),
                   countrycode: parsedNumber === null || parsedNumber === void 0 ? void 0 : parsedNumber.countryCallingCode,
-                  password: array[index + 1]
+                  password: array[index + 1],
+                  IsPlayNeed: array[index + 2]
                 });
               }
             });
@@ -296,13 +292,13 @@ _axios["default"].interceptors.request.use( /*#__PURE__*/function () {
           case 0:
             config.withCredentials = true; //防止网易对IP的限制
 
-            config.headers['X-Real-IP'] = '123.139.248.164';
+            config.headers['X-Real-IP'] = '222.216.20.50';
             method = config.method, url = config.url;
             (_config$params = config.params) !== null && _config$params !== void 0 ? _config$params : config.params = {}; // config.params.proxy='http://127.0.0.1:7890'
 
             if ((method === null || method === void 0 ? void 0 : method.toUpperCase()) === 'POST') {
               config.params.timestamp = Date.now();
-              config.params.realIP = '123.139.248.164';
+              config.params.realIP = '222.216.20.50';
             }
 
             (_config$data = config.data) !== null && _config$data !== void 0 ? _config$data : config.data = {};
@@ -754,7 +750,7 @@ var playDailySongs = /*#__PURE__*/function () {
 
 var main = /*#__PURE__*/function () {
   var _ref16 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee16(event, context, callback) {
-    var res, _INFO$accounts$shift, phone;
+    var res, _INFO$accounts$shift, phone, IsPlayNeed, isPlayNeed;
 
     return _regeneratorRuntime().wrap(function _callee16$(_context16) {
       while (1) {
@@ -776,36 +772,44 @@ var main = /*#__PURE__*/function () {
 
           case 9:
             if (!INFO.cookies.length) {
-              _context16.next = 31;
+              _context16.next = 33;
               break;
             }
 
-            _INFO$accounts$shift = INFO.accounts.shift(), phone = _INFO$accounts$shift.phone;
+            _INFO$accounts$shift = INFO.accounts.shift(), phone = _INFO$accounts$shift.phone, IsPlayNeed = _INFO$accounts$shift.IsPlayNeed;
+            isPlayNeed = IsPlayNeed == "true";
             res[phone] = [];
             console.log('开始处理' + phone);
+
+            if (!isPlayNeed) {
+              _context16.next = 25;
+              break;
+            }
+
             _context16.t0 = res[phone];
-            _context16.next = 16;
+            _context16.next = 18;
             return playDailySongs(INFO.api);
 
-          case 16:
+          case 18:
             _context16.t1 = _context16.sent;
 
             _context16.t0.push.call(_context16.t0, _context16.t1);
 
             _context16.t2 = res[phone];
-            _context16.next = 21;
+            _context16.next = 23;
             return playDailyLists(INFO.api);
 
-          case 21:
+          case 23:
             _context16.t3 = _context16.sent;
 
             _context16.t2.push.call(_context16.t2, _context16.t3);
 
+          case 25:
             _context16.t4 = res[phone];
-            _context16.next = 26;
+            _context16.next = 28;
             return checkIn(INFO.api);
 
-          case 26:
+          case 28:
             _context16.t5 = _context16.sent;
 
             _context16.t4.push.call(_context16.t4, _context16.t5);
@@ -814,30 +818,27 @@ var main = /*#__PURE__*/function () {
             _context16.next = 9;
             break;
 
-          case 31:
-            _context16.next = 36;
+          case 33:
+            _context16.next = 38;
             break;
 
-          case 33:
-            _context16.prev = 33;
+          case 35:
+            _context16.prev = 35;
             _context16.t6 = _context16["catch"](2);
             res[_context16.t6] = _context16.t6;
 
-          case 36:
+          case 38:
             callback(null, res);
 
-          case 37:
+          case 39:
           case "end":
             return _context16.stop();
         }
       }
-    }, _callee16, null, [[2, 33]]);
+    }, _callee16, null, [[2, 35]]);
   }));
 
   return function main(_x18, _x19, _x20) {
     return _ref16.apply(this, arguments);
   };
-}(); // main({}, {}, () => {})
-
-
-exports.main = main;
+}(); // main({}, {}, (a,b) => {console.log(a+b)})
