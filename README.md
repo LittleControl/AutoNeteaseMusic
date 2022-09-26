@@ -8,6 +8,7 @@
 - 由于 Vercel 免费额度问题,先已不再提供搭建好的后端 API,还请自行搭建,搭建步骤还请参考[NeteaseCloudMusicApi 在 vercel 上的部署](https://neteasecloudmusicapi.vercel.app/#/?id=vercel-%e9%83%a8%e7%bd%b2),当然也不必非局限于 Vercel 这个平台
 - 经过我一周工作的摸鱼时间,写出了这个项目,代码写的确实烂,还请见谅
 - 因为没有`Node.js`的较为大型项目开发经验,所以好多代码确实辣眼睛,还请不吝赐教
+- **注意，当前Vercel遭到DNS污染，Vercel.app域名在国内无法访问！**
 
 ## 已实现的功能
 
