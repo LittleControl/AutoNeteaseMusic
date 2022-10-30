@@ -55,6 +55,7 @@ const getCookies = async (dir, info) => {
     return cookies
   } catch (error) {
     console.log('获取Cookie失败')
+    console.log(error?.response)
     console.log(error?.response?.data)
     return []
   }
@@ -93,19 +94,20 @@ axios.interceptors.request.use(
   async (config) => {
     config.withCredentials = true
     //防止网易对IP的限制
-    config.headers['X-Real-IP'] = '123.139.248.164'
+    // config.headers['X-Real-IP'] = '10.0.23.143'
     const { method, url } = config
     config.params ??= {}
     // config.params.proxy='http://127.0.0.1:7890'
+    config.params.realIP = '116.25.146.177'
     if (method?.toUpperCase() === 'POST') {
       config.params.timestamp = Date.now()
-      config.params.realIP = '123.139.248.164'
     }
     config.data ??= {}
     if (url?.includes('login')) {
       return config
     }
     config.data.cookie = INFO.cookies[0]
+    // config.headers['Cookie'] = INFO.cookies[0]
     return config
   },
   async (error) => {
@@ -286,4 +288,4 @@ export const main = async (event, context, callback) => {
   }
   callback(null, res)
 }
-// main({}, {}, () => {})
+main({}, {}, () => {})
